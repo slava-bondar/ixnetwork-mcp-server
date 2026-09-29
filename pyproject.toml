@@ -1,0 +1,22 @@
+[project]
+name = "ixnetwork-mcp-server"
+version = "0.1.0"
+description = "MCP server for Keysight IxNetwork (NGPF topologies, protocols, traffic) via ixnetwork_restpy"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp[cli]>=1.27,<2.0",
+    "ixnetwork-restpy==1.9.0",
+    "pydantic>=2.0",
+]
+
+[project.scripts]
+ixnetwork-mcp-server = "ixnetwork_mcp.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ixnetwork_mcp"]
+

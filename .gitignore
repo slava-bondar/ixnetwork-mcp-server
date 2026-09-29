@@ -1,0 +1,57 @@
+# ---------------------------------------------------------------- never publish
+# Internal development material: plan, API findings, probe scripts, lab-captured test
+# fixtures and the pre-publication history bundle live in workdir/ (local only).
+workdir/
+CLAUDE.md
+CLAUDE.local.md
+
+# Inventories and credentials. Keep real inventories in ~/.ixnetwork-mcp/ (see
+# ixnetwork-template.json); these patterns catch copies dropped into the repo.
+ixnetwork.json
+ixnetwork.*.json
+!ixnetwork-template.json
+devices.json
+inventory*.json
+.env
+.env.*
+.tokens
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Saved IxNetwork configurations, exports and reports from a lab
+# (save_config writes to ~/.ixnetwork-mcp/configs/<target>/, never here)
+*.ixncfg
+*.ixncfg.*
+configs/
+saved_configs/
+config_snapshot/
+*.xlsx
+*.csv
+*.har
+
+# Schema crawl leftovers (complete per-build caches under schema/cache/ are committed)
+ixnetwork_mcp/schema/cache/*.partial.json.gz
+ixnetwork_mcp/schema/cache/*.tmp
+
+# Claude Code / agent local state
+.claude/settings.local.json
+.claude/*.local.*
+
+# ---------------------------------------------------------------- build / tooling
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+
+# ---------------------------------------------------------------- OS / editors
+.DS_Store
+.vscode/
+.idea/
+*.swp

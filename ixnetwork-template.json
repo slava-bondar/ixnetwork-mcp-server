@@ -1,0 +1,20 @@
+{
+  "lab": {
+    "ip": "192.0.2.10",
+    "rest_port": 11009,
+    "session_id": 1,
+    "username": null,
+    "password": "${IXN_PASSWORD}",
+    "api_key": null,
+    "verify_cert": false,
+    "timeouts": {"connect_s": 10, "read_s": 120, "tool_deadline_s": 600},
+    "guards": {
+      "read_only": false,
+      "allow_clear_config": false,
+      "allow_traffic_start": true,
+      "allow_port_takeover": false,
+      "allow_raw_import": false
+    },
+    "config_dir": "~/.ixnetwork-mcp/configs/lab"
+  }
+}
