@@ -95,11 +95,53 @@ class PacketHeaderField(_M):
     step_value: str | None = None
     count: int | None = None
     value_list: list[str] | None = None
+    auto: bool | None = None  # true: the server fills the field (e.g. MPLS Bottom of Stack); values are ignored
+
+    @model_validator(mode="before")
+    @classmethod
+    def _stringify(cls, v: Any) -> Any:  # labels like 100 / [50, 51] arrive as numbers
+        if isinstance(v, dict):
+            v = dict(v)
+            for k in ("single_value", "start_value", "step_value"):
+                if isinstance(v.get(k), (int, float)) and not isinstance(v.get(k), bool):
+                    v[k] = str(v[k])
+            if isinstance(v.get("value_list"), list):
+                v["value_list"] = [str(x) for x in v["value_list"]]
+        return v
 
 
 class PacketHeader(_M):
+    """One header. Entries are in packet order; the n-th entry of a protocol is the n-th header of that
+    protocol (two "mpls" entries = a two-label stack)."""
     protocol: str  # template stackTypeId or display name, e.g. udp, tcp, vxlan, mpls, icmpv4
     fields: list[PacketHeaderField] = Field(default_factory=list)
+
+
+class HeaderChange(_M):
+    """One in-place packet edit (edit_packet_headers). Headers are '<protocol>#<n>' (the n-th header of
+    that protocol, default 1, e.g. 'mpls#2') or a 1-based packet position.
+    {"header": ref, "fields": [...]} sets fields; {"add": protocol, "after" | "before": ref, "fields": [...]}
+    inserts a header; {"remove": ref} deletes one."""
+    header: str | None = None
+    add: str | None = None
+    after: str | None = None
+    before: str | None = None
+    remove: str | None = None
+    fields: list[PacketHeaderField] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _one_action(self) -> "HeaderChange":
+        if sum(v is not None for v in (self.header, self.add, self.remove)) != 1:
+            raise ValueError("give exactly one of 'header' (set fields), 'add' or 'remove'")
+        if self.add is not None and (self.after is None) == (self.before is None):
+            raise ValueError("'add' needs exactly one of 'after' or 'before'")
+        if self.add is None and (self.after is not None or self.before is not None):
+            raise ValueError("'after' / 'before' only go with 'add'")
+        if self.remove is not None and self.fields:
+            raise ValueError("'remove' takes no fields")
+        if self.header is not None and not self.fields:
+            raise ValueError("'header' needs 'fields' to set")
+        return self
 
 
 class ConfigElementConfig(_M):
@@ -112,12 +154,24 @@ class ConfigElementConfig(_M):
 class EndpointRef(_M):
     """One endpoint. Prefer ``ref`` (name of an ipv4/ipv6 stack, network group, dhcp client,
     device group or topology). The legacy keys scope by names: topology + device_group,
-    device_group + network_group; vport is for raw traffic."""
+    device_group + network_group; vport is for raw traffic.
+
+    port_start / port_count / device_start / device_count select a subset of the object's devices
+    (the GUI's Select Endpoints dialog, endpointSet scalableSources/scalableDestinations): ports
+    by 1-based position in the topology's port list (or vport name), devices 1-based per port."""
     ref: str | None = None
     topology: str | None = None
     device_group: str | None = None
     network_group: str | None = None
     vport: str | None = None
+    port_start: int | str | None = None
+    port_count: int | None = Field(None, ge=1)
+    device_start: int | None = Field(None, ge=1)
+    device_count: int | None = Field(None, ge=1)
+
+    @property
+    def is_subset(self) -> bool:
+        return any(v is not None for v in (self.port_start, self.port_count, self.device_start, self.device_count))
 
     @model_validator(mode="after")
     def _require_one(self) -> "EndpointRef":
@@ -126,6 +180,10 @@ class EndpointRef(_M):
             raise ValueError("endpoint needs 'ref' (or topology / device_group / network_group / vport)")
         if self.ref is not None and any(v is not None for v in legacy):
             raise ValueError("use either 'ref' or the topology/device_group/network_group/vport keys")
+        if self.is_subset and self.vport is not None:
+            raise ValueError("port_start/port_count/device_start/device_count need a protocol object, not a vport")
+        if isinstance(self.port_start, int) and self.port_start < 1:
+            raise ValueError("port_start is 1-based (or a vport name)")
         return self
 
 

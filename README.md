@@ -100,7 +100,7 @@ Options: `-T/--targets a,b` exposes only some inventory entries, and
 | `assign_ports` / `unassign_ports` | connect vports to chassis ports |
 | `control_protocols` | start / stop / restart down sessions / apply changes on the fly |
 | `configure_traffic_items` / `get_traffic_items` | create, update and read traffic items |
-| `describe_packet_headers` | packet header templates and their fields |
+| `describe_packet_headers` / `edit_packet_headers` | packet header templates, an item's packet, and in-place header edits (e.g. MPLS labels) |
 | `control_traffic` | generate / apply / start / stop traffic, clear statistics |
 | `get_stats` | statistics views with row filters |
 | `save_config` / `list_saved_configs` / `check_drift` / `load_config` / `new_config` | save, compare and restore configurations |

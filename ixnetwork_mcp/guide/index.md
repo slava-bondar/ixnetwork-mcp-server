@@ -20,7 +20,7 @@ Tools available now:
 - change configuration piece by piece: `set_attributes`, `add_node`, `delete_nodes`, `run_operation`,
   `import_config_fragment` (advanced)
 - ports and protocols: `assign_ports`, `unassign_ports`, `control_protocols`
-- traffic: `configure_traffic_items`, `get_traffic_items`, `describe_packet_headers`,
+- traffic: `configure_traffic_items`, `get_traffic_items`, `describe_packet_headers`, `edit_packet_headers`,
   `control_traffic`, `get_stats`
 - save / compare / restore (only when the user asks): `save_config`, `list_saved_configs`,
   `check_drift`, `load_config`, `new_config`

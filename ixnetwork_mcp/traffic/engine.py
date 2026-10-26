@@ -23,11 +23,12 @@ from typing import Any
 from .. import rest
 from ..refs import ConfigIndex, Node
 from .models import (ConfigElementConfig, EndpointRef, EndpointSetConfig, FlowTrackingConfig, FrameSizeType,
-                     TrafficItemConfig, TransmissionType)
+                     HeaderChange, PacketHeaderField, TrafficItemConfig, TransmissionType)
 
 log = logging.getLogger("ixnetwork_mcp.traffic")
 
 _BASE_LAYER_KEYWORDS = ("ethernet", "ipv4", "ipv6", "vlan", "fcs", "frame check sequence")
+_L2_TYPES = ("ethernet", "vlan", "mpls")  # new headers of these types go after the last of them
 EXPECTED_GENERATE_WARNINGS = ("destination MACs or VPNs are invalid or unreachable",
                               "no packets were generated due to destination MACs")
 
@@ -52,8 +53,8 @@ def _under(node: Node, ancestor: Node) -> bool:
     return node.xpath.startswith(ancestor.xpath + "/")
 
 
-def resolve_endpoint(index: ConfigIndex, ref: EndpointRef, where: str) -> tuple[str | None, str | None]:
-    """-> (href, error). Raw (vport) endpoints are the vport's /protocols object."""
+def _endpoint_node(index: ConfigIndex, ref: EndpointRef, where: str) -> tuple[Node | None, str | None, str | None]:
+    """-> (node, href, error). Raw (vport) endpoints are the vport's /protocols object."""
     from ..errors import IxToolError
 
     def by(type_: str, name: str, within: Node | None = None) -> list[Node]:
@@ -62,50 +63,115 @@ def resolve_endpoint(index: ConfigIndex, ref: EndpointRef, where: str) -> tuple[
     try:
         if ref.ref is not None:
             node = index.resolve(ref.ref)
-            return (f"{node.href}/protocols" if node.type == "vport" else node.href), None
+            return node, (f"{node.href}/protocols" if node.type == "vport" else node.href), None
         if ref.vport is not None:
             node = index.resolve(ref.vport, types=["vport"])
-            return f"{node.href}/protocols", None
+            return node, f"{node.href}/protocols", None
         topo = None
         if ref.topology is not None:
             t = by("topology", ref.topology)
             if not t:
-                return None, f"{where}: no topology named '{ref.topology}'"
+                return None, None, f"{where}: no topology named '{ref.topology}'"
             topo = t[0]
         if ref.device_group is not None:
             dgs = by("deviceGroup", ref.device_group, topo)
             if not dgs:
-                return None, f"{where}: no device group '{ref.device_group}'" + (f" in '{ref.topology}'" if topo else "")
+                return None, None, (f"{where}: no device group '{ref.device_group}'"
+                                    + (f" in '{ref.topology}'" if topo else ""))
             if ref.network_group is not None:
                 ngs = by("networkGroup", ref.network_group, dgs[0])
                 if not ngs:
-                    return None, f"{where}: no network group '{ref.network_group}' under '{ref.device_group}'"
-                return ngs[0].href, None
-            return dgs[0].href, None
+                    return None, None, f"{where}: no network group '{ref.network_group}' under '{ref.device_group}'"
+                return ngs[0], ngs[0].href, None
+            return dgs[0], dgs[0].href, None
         if ref.network_group is not None:
             ngs = by("networkGroup", ref.network_group, topo)
-            return (ngs[0].href, None) if ngs else (None, f"{where}: no network group '{ref.network_group}'")
-        return (topo.href, None) if topo else (None, f"{where}: empty endpoint")
+            return (ngs[0], ngs[0].href, None) if ngs else (None, None, f"{where}: no network group '{ref.network_group}'")
+        return (topo, topo.href, None) if topo else (None, None, f"{where}: empty endpoint")
     except IxToolError as exc:
         cands = exc.extra.get("candidates")
-        return None, f"{where}: {exc.message}" + (f" (candidates: {[c.get('name') for c in cands]})" if cands else "")
+        return None, None, f"{where}: {exc.message}" + (f" (candidates: {[c.get('name') for c in cands]})" if cands else "")
+
+
+def resolve_endpoint(index: ConfigIndex, ref: EndpointRef, where: str) -> tuple[str | None, str | None]:
+    """-> (href, error). Raw (vport) endpoints are the vport's /protocols object."""
+    _, href, err = _endpoint_node(index, ref, where)
+    return href, err
+
+
+def _subset(index: ConfigIndex, node: Node, ref: EndpointRef, where: str) -> tuple[dict[str, Any] | None, str | None]:
+    """Scalable endpoint {arg1: object, arg2: port start, arg3: port count, arg4: first device, arg5: device count}.
+    Ports are 1-based positions in the topology's port list; devices are 1-based and per port."""
+    m = re.match(r"^/topology\[\d+\]", node.xpath)
+    topo = index.by_xpath.get(m.group(0)) if m else None
+    if topo is None or "/deviceGroup[" not in node.xpath:
+        return None, f"{where}: a port/device subset needs an object inside a device group, not a {node.type}"
+    ports = [str(p).rstrip("/") for p in topo.props.get("ports") or []]
+    names = [index.by_href[p].name if p in index.by_href else p for p in ports]
+    if not ports:
+        return None, f"{where}: topology '{topo.name}' has no ports"
+    ps = 1 if ref.port_start is None else ref.port_start
+    if isinstance(ps, str):
+        if ps.strip().isdigit():
+            ps = int(ps)
+        elif ps in names:
+            ps = names.index(ps) + 1
+        else:
+            return None, f"{where}.port_start: '{ps}' is not a port of topology '{topo.name}' (ports: {names})"
+    if not 1 <= ps <= len(ports):
+        return None, f"{where}.port_start: {ps} is outside 1..{len(ports)} (topology '{topo.name}' ports: {names})"
+    pc = len(ports) - ps + 1 if ref.port_count is None else ref.port_count
+    if ps + pc - 1 > len(ports):
+        return None, (f"{where}.port_count: {pc} ports from port_start {ps} need {ps + pc - 1}, "
+                      f"topology '{topo.name}' has {len(ports)} ({names})")
+    try:
+        per_port = int(node.props.get("count")) // len(ports)
+    except (TypeError, ValueError):
+        return None, f"{where}: cannot read the device count of '{node.name}'"
+    ds = 1 if ref.device_start is None else ref.device_start
+    if ds > per_port:
+        return None, f"{where}.device_start: {ds} is outside 1..{per_port} ('{node.name}' has {per_port} per port)"
+    dc = per_port - ds + 1 if ref.device_count is None else ref.device_count
+    if ds + dc - 1 > per_port:
+        return None, (f"{where}.device_count: {dc} devices from device_start {ds} need {ds + dc - 1}, "
+                      f"'{node.name}' has {per_port} per port")
+    return {"arg1": node.href, "arg2": ps, "arg3": pc, "arg4": ds, "arg5": dc}, None
+
+
+def _resolve_side(index: ConfigIndex, refs: list[EndpointRef], where: str,
+                  problems: list[str]) -> tuple[list[str], list[dict[str, Any]]]:
+    whole, subsets = [], []
+    for j, r in enumerate(refs):
+        node, href, err = _endpoint_node(index, r, f"{where}[{j}]")
+        if err is None and r.is_subset:
+            sub, err = _subset(index, node, r, f"{where}[{j}]")
+            if sub:
+                subsets.append(sub)
+        elif href:
+            whole.append(href)
+        if err:
+            problems.append(err)
+    return whole, subsets
 
 
 def resolve_endpoint_sets(index: ConfigIndex, cfg: TrafficItemConfig) -> list[dict[str, Any]]:
     resolved, problems = [], []
     for i, es in enumerate(cfg.endpoint_sets):
-        srcs = [resolve_endpoint(index, r, f"{cfg.name}.endpoint_sets[{i}].sources[{j}]") for j, r in enumerate(es.sources)]
-        dsts = [resolve_endpoint(index, r, f"{cfg.name}.endpoint_sets[{i}].destinations[{j}]")
-                for j, r in enumerate(es.destinations)]
-        problems += [e for _, e in srcs + dsts if e]
-        entry: dict[str, Any] = {"Sources": [h for h, _ in srcs if h]}
+        where = f"{cfg.name}.endpoint_sets[{i}]"
+        srcs, scalable_srcs = _resolve_side(index, es.sources, f"{where}.sources", problems)
+        dsts, scalable_dsts = _resolve_side(index, es.destinations, f"{where}.destinations", problems)
+        entry: dict[str, Any] = {"Sources": srcs}
         if es.multicast_destinations:
             v6 = ":" in es.multicast_destinations[0].group
             entry["MulticastDestinations"] = [
                 {"arg1": False, "arg2": "none", "arg3": d.group, "arg4": d.step or ("::" if v6 else "0.0.0.0"),
                  "arg5": d.count} for d in es.multicast_destinations]
         else:
-            entry["Destinations"] = [h for h, _ in dsts if h]
+            entry["Destinations"] = dsts
+        if scalable_srcs:
+            entry["ScalableSources"] = scalable_srcs
+        if scalable_dsts:
+            entry["ScalableDestinations"] = scalable_dsts
         resolved.append(entry)
     if problems:
         raise TrafficProblems(problems)
@@ -138,41 +204,99 @@ def _is_base_layer(display_name: str) -> bool:
     return any(kw in dn for kw in _BASE_LAYER_KEYWORDS)
 
 
-def _match_stack(stacks: list[Any], protocol: str) -> Any | None:
-    p = protocol.lower()
+def _is_fcs(s: Any) -> bool:
+    dn = (s.DisplayName or "").lower()
+    return "frame check sequence" in dn or "fcs" in dn
+
+
+def _stack_type(s: Any) -> str:
+    return (s.StackTypeId or "").lower()
+
+
+def header_labels(stacks: list[Any]) -> list[str]:
+    """'<stackTypeId>#<n>' for each header in packet order (n = occurrence of that type)."""
+    seen: dict[str, int] = {}
+    out = []
     for s in stacks:
-        if (s.StackTypeId or "").lower() == p:
-            return s
-    for s in stacks:
-        if p in (s.DisplayName or "").lower():
-            return s
-    return None
+        t = s.StackTypeId or ""
+        seen[t] = seen.get(t, 0) + 1
+        out.append(f"{t}#{seen[t]}")
+    return out
+
+
+def find_header(stacks: list[Any], ref: str) -> int | None:
+    """Index of 'mpls#2', 'mpls' (= mpls#1), a display name or a 1-based position ('4') in stacks."""
+    r = ref.strip()
+    if r.isdigit():
+        i = int(r) - 1
+        return i if 0 <= i < len(stacks) else None
+    name, _, occ = r.partition("#")
+    if occ and not occ.strip().isdigit():
+        return None
+    n, name = (int(occ) if occ else 1), name.strip().lower()
+    hits = [i for i, s in enumerate(stacks) if _stack_type(s) == name] or \
+           [i for i, s in enumerate(stacks) if (s.DisplayName or "").strip().lower() == name]
+    return hits[n - 1] if 0 < n <= len(hits) else None
+
+
+def _match_field(fields: list[Any], name: str) -> Any | None:
+    want = name.lower()
+    return next((x for x in fields if (x.DisplayName or "").lower() == want), None) or \
+        next((x for x in fields if (x.FieldTypeId or "").lower() == want), None) or \
+        next((x for x in fields if (x.FieldTypeId or "").lower().endswith("." + want)), None)
+
+
+def _set_field(f: Any, fcfg: PacketHeaderField) -> None:
+    if fcfg.auto:
+        f.Auto = True
+        return
+    f.Auto = False
+    f.ValueType = fcfg.value_type
+    if fcfg.value_type == "singleValue" and fcfg.single_value is not None:
+        f.SingleValue = fcfg.single_value
+    elif fcfg.value_type in ("increment", "decrement"):
+        if fcfg.start_value is not None:
+            f.StartValue = fcfg.start_value
+        if fcfg.step_value is not None:
+            f.StepValue = fcfg.step_value
+        if fcfg.count is not None:
+            f.CountValue = fcfg.count
+    elif fcfg.value_type == "valueList" and fcfg.value_list is not None:
+        f.ValueList = fcfg.value_list
 
 
 def _apply_stack_fields(stack_obj: Any, header, where: str, problems: list[str]) -> None:
     fields = list(stack_obj.Field.find())
     for fcfg in header.fields:
-        want = fcfg.field_name.lower()
-        f = next((x for x in fields if (x.DisplayName or "").lower() == want), None) or \
-            next((x for x in fields if (x.FieldTypeId or "").lower() == want), None) or \
-            next((x for x in fields if (x.FieldTypeId or "").lower().endswith("." + want)), None)
+        f = _match_field(fields, fcfg.field_name)
         if f is None:
             problems.append(f"{where}.fields: no field '{fcfg.field_name}' in {stack_obj.DisplayName} "
                             f"(e.g. {_close(fcfg.field_name, [x.DisplayName for x in fields])})")
             continue
-        f.Auto = False
-        f.ValueType = fcfg.value_type
-        if fcfg.value_type == "singleValue" and fcfg.single_value is not None:
-            f.SingleValue = fcfg.single_value
-        elif fcfg.value_type in ("increment", "decrement"):
-            if fcfg.start_value is not None:
-                f.StartValue = fcfg.start_value
-            if fcfg.step_value is not None:
-                f.StepValue = fcfg.step_value
-            if fcfg.count is not None:
-                f.CountValue = fcfg.count
-        elif fcfg.value_type == "valueList" and fcfg.value_list is not None:
-            f.ValueList = fcfg.value_list
+        _set_field(f, fcfg)
+
+
+def _place_headers(ce: Any, wanted: list[tuple[Any, dict[str, Any]]]) -> None:
+    """Put the stack entries into the packet in order: the n-th entry of a protocol is the n-th header of
+    that protocol. Existing headers (base layers) are matched; the rest are inserted at their natural spot
+    (ethernet/vlan/mpls after the last of those, anything else before the FCS), but never before the previous
+    entry's header. Positions are re-read after every insert (stack ids shift)."""
+    cursor: int | None = None
+    seen: dict[str, int] = {}
+    for _, tpl in wanted:
+        t = tpl["type"].lower()
+        seen[t] = seen.get(t, 0) + 1
+        stacks = list(ce.Stack.find())
+        hits = [i for i, s in enumerate(stacks) if _stack_type(s) == t]
+        if len(hits) >= seen[t]:
+            cursor = hits[seen[t] - 1] if cursor is None else max(cursor, hits[seen[t] - 1])
+            continue
+        l2 = [i for i, s in enumerate(stacks) if _stack_type(s) in _L2_TYPES]
+        body = [i for i, s in enumerate(stacks) if not _is_fcs(s)] or [len(stacks) - 1]
+        spot = l2[-1] if t in _L2_TYPES and l2 else body[-1]
+        cursor = spot if cursor is None else max(cursor, spot)
+        stacks[cursor].Append(Arg2=tpl["href"])
+        cursor += 1
 
 
 def apply_config_element(ce: Any, cfg: ConfigElementConfig, templates: Templates, where: str,
@@ -231,20 +355,16 @@ def apply_config_element(ce: Any, cfg: ConfigElementConfig, templates: Templates
         if stale is None:
             break
         stale.Remove()
-    for header, tpl in wanted:
-        if _is_base_layer(tpl["display"]) and _match_stack(list(ce.Stack.find()), header.protocol):
-            continue  # base layers (ethernet/vlan/ipv4/ipv6) already exist
-        stacks = list(ce.Stack.find())
-        insert_at = next((s for s in reversed(stacks) if "frame check sequence" not in (s.DisplayName or "").lower()
-                          and "fcs" not in (s.DisplayName or "").lower()), stacks[-1])
-        insert_at.Append(Arg2=tpl["href"])
+    _place_headers(ce, wanted)
     stacks = list(ce.Stack.find())
-    for i, (header, _) in enumerate(wanted):
-        s = _match_stack(stacks, header.protocol)
-        if s is None:
+    seen: dict[str, int] = {}
+    for i, (header, tpl) in enumerate(wanted):
+        seen[tpl["type"]] = seen.get(tpl["type"], 0) + 1
+        idx = find_header(stacks, f"{tpl['type']}#{seen[tpl['type']]}")
+        if idx is None:
             problems.append(f"{where}.stack[{i}]: '{header.protocol}' is not in the packet after adding it")
             continue
-        _apply_stack_fields(s, header, f"{where}.stack[{i}]", problems)
+        _apply_stack_fields(stacks[idx], header, f"{where}.stack[{i}]", problems)
 
 
 def apply_tracking(ti: Any, cfg: FlowTrackingConfig, where: str, problems: list[str]) -> None:
@@ -333,6 +453,25 @@ def update(ixn: Any, cfg: TrafficItemConfig, ti: Any, index: ConfigIndex, templa
     return _outcome(ti, warnings, "updated")
 
 
+def _same_value(a: Any, b: Any) -> bool:
+    """'0' == '0x0' == 0 for numeric field values; plain string comparison otherwise."""
+    try:
+        return int(str(a), 0) == int(str(b), 0)
+    except ValueError:
+        return str(a) == str(b)
+
+
+def _field_value(f: Any) -> dict[str, Any]:
+    fe: dict[str, Any] = {"field_name": f.DisplayName, "value_type": f.ValueType}
+    if f.ValueType == "singleValue":
+        fe["single_value"] = f.SingleValue
+    elif f.ValueType in ("increment", "decrement"):
+        fe.update(start_value=f.StartValue, step_value=f.StepValue, count=f.CountValue)
+    elif f.ValueType == "valueList":
+        fe["value_list"] = f.ValueList
+    return fe
+
+
 def _outcome(ti: Any, warnings: list[str], action: str) -> dict[str, Any]:
     unexpected = [w for w in warnings if not any(e in w for e in EXPECTED_GENERATE_WARNINGS)]
     out: dict[str, Any] = {"name": ti.Name, "action": action, "state": ti.State,
@@ -345,12 +484,164 @@ def _outcome(ti: Any, warnings: list[str], action: str) -> dict[str, Any]:
     return out
 
 
+# ---------------------------------------------------------------------------- in-place header edits
+
+def config_element(ti: Any, n: int) -> Any:
+    from ..errors import NOT_FOUND, IxToolError
+    ces = list(ti.ConfigElement.find())
+    if not 1 <= n <= len(ces):
+        raise IxToolError(NOT_FOUND, f"'{ti.Name}' has {len(ces)} config element(s); config_element is 1-based")
+    return ces[n - 1]
+
+
+def _template_fields(ixn: Any, tpl: dict[str, Any]) -> list[Any]:
+    from types import SimpleNamespace
+    rows = rest.get(ixn, tpl["href"].split("/ixnetwork/", 1)[1] +
+                    "/field?includes=displayName,fieldTypeId,availableValueTypes,readOnly")
+    return [SimpleNamespace(DisplayName=r.get("displayName"), FieldTypeId=r.get("fieldTypeId"),
+                            AvailableValueTypes=r.get("availableValueTypes"), ReadOnly=r.get("readOnly"))
+            for r in rows]
+
+
+def _check_fields(fields: list[Any], changes: list[PacketHeaderField], header: str, where: str,
+                  problems: list[str]) -> None:
+    for j, fc in enumerate(changes):
+        w = f"{where}.fields[{j}]"
+        f = _match_field(fields, fc.field_name)
+        if f is None:
+            problems.append(f"{w}: no field '{fc.field_name}' in {header} "
+                            f"(e.g. {_close(fc.field_name, [x.DisplayName for x in fields])})")
+            continue
+        if f.ReadOnly:
+            problems.append(f"{w}: '{f.DisplayName}' in {header} is read-only")
+            continue
+        if fc.auto:
+            continue
+        types = list(f.AvailableValueTypes or [])
+        if types and fc.value_type not in types:
+            problems.append(f"{w}: '{f.DisplayName}' takes {types}, not '{fc.value_type}'")
+        need = {"singleValue": ("single_value", fc.single_value is None),
+                "valueList": ("value_list", not fc.value_list),
+                "increment": ("start_value/step_value/count", all(v is None for v in (fc.start_value, fc.step_value,
+                                                                                       fc.count)))}
+        need["decrement"] = need["increment"]
+        key, missing = need.get(fc.value_type, ("", False))
+        if missing:
+            problems.append(f"{w}: {fc.value_type} for '{f.DisplayName}' needs {key}")
+
+
+def check_header_edits(ixn: Any, ce: Any, changes: list[HeaderChange],
+                       templates: Templates) -> tuple[list[str], list[str]]:
+    """Validate every change against a simulated packet -> (header labels afterwards, problems)."""
+    from types import SimpleNamespace
+    sim = [SimpleNamespace(StackTypeId=s.StackTypeId, DisplayName=s.DisplayName, stack=s, tpl=None)
+           for s in ce.Stack.find()]
+    problems: list[str] = []
+
+    def locate(ref: str, w: str) -> int | None:
+        idx = find_header(sim, ref)
+        if idx is None:
+            problems.append(f"{w}: no header '{ref}' (headers: {header_labels(sim)})")
+        return idx
+
+    def fields_of(h: Any) -> list[Any]:
+        return list(h.stack.Field.find()) if h.stack is not None else _template_fields(ixn, h.tpl)
+
+    for i, c in enumerate(changes):
+        w = f"changes[{i}]"
+        if c.header is not None:
+            idx = locate(c.header, w)
+            if idx is not None:
+                _check_fields(fields_of(sim[idx]), c.fields, header_labels(sim)[idx], w, problems)
+        elif c.add is not None:
+            tpl, cands = templates.find(c.add)
+            if tpl is None:
+                problems.append(f"{w}: unknown protocol '{c.add}' (e.g. {cands})")
+            idx = locate(c.after or c.before, w)
+            if tpl is None or idx is None:
+                continue
+            new = SimpleNamespace(StackTypeId=tpl["type"], DisplayName=tpl["display"], stack=None, tpl=tpl)
+            pos = idx + 1 if c.after is not None else idx
+            sim.insert(pos, new)
+            if c.fields:
+                _check_fields(fields_of(new), c.fields, header_labels(sim)[pos], w, problems)
+        else:
+            idx = locate(c.remove, w)
+            if idx is not None and _is_fcs(sim[idx]):
+                problems.append(f"{w}: the frame check sequence can't be removed")
+            elif idx is not None:
+                del sim[idx]
+    return header_labels(sim), problems
+
+
+_FIELD_ATTRS = ("ValueType", "SingleValue", "StartValue", "StepValue", "CountValue", "ValueList")
+
+
+def _restore_fields(ce: Any, restore: list[list[Any]]) -> None:
+    for idx, name, before in reversed(restore):
+        try:
+            f = _match_field(list(list(ce.Stack.find())[idx].Field.find()), name)
+            f.Auto = False
+            for attr in _FIELD_ATTRS:
+                if before.get(attr) is not None:
+                    setattr(f, attr, before[attr])
+            if before.get("Auto"):
+                f.Auto = True
+        except Exception as exc:  # noqa: BLE001
+            log.warning("could not restore packet field %s of header %d: %s", name, idx + 1, exc)
+
+
+def edit_headers(ce: Any, ti: Any, changes: list[HeaderChange], templates: Templates) -> dict[str, Any]:
+    """Apply validated changes in order (stack ids shift after every add/remove, so re-read each time), then
+    Generate. Field edits are put back if a step raises; headers added or removed before that stay."""
+    restore: list[list[Any]] = []  # [stack index, field name, previous values]
+    try:
+        for c in changes:
+            stacks = list(ce.Stack.find())
+            if c.header is not None:
+                idx = find_header(stacks, c.header)
+                fields = list(stacks[idx].Field.find())
+                for fc in c.fields:
+                    f = _match_field(fields, fc.field_name)
+                    restore.append([idx, f.DisplayName, {a: getattr(f, a) for a in ("Auto",) + _FIELD_ATTRS}])
+                    _set_field(f, fc)
+            elif c.add is not None:
+                tpl, _ = templates.find(c.add)
+                idx = find_header(stacks, c.after or c.before)
+                if c.after is not None:
+                    stacks[idx].Append(Arg2=tpl["href"])
+                    idx += 1
+                else:
+                    stacks[idx].Insert(Arg2=tpl["href"])
+                for r in restore:
+                    r[0] += r[0] >= idx
+                fields = list(list(ce.Stack.find())[idx].Field.find())
+                for fc in c.fields:
+                    _set_field(_match_field(fields, fc.field_name), fc)
+            else:
+                idx = find_header(stacks, c.remove)
+                stacks[idx].Remove()
+                restore = [[r[0] - (r[0] > idx), r[1], r[2]] for r in restore if r[0] != idx]
+    except Exception:
+        _restore_fields(ce, restore)
+        raise
+    ti.Generate()
+    ti.refresh()
+    errors = list(ti.Errors or [])
+    if errors:
+        raise TrafficProblems([f"{ti.Name}: {e}" for e in errors])
+    out = _outcome(ti, list(ti.Warnings or []), "edited")
+    out["headers"] = header_labels(list(ce.Stack.find()))
+    return out
+
+
 # ---------------------------------------------------------------------------- read
 
 def summarize(ixn: Any, index: ConfigIndex, names: list[str] | None) -> list[dict[str, Any]]:
     root = rest.root(ixn)
     props = ["name", "trafficType", "state", "enabled", "biDirectional", "srcDestMesh", "errors", "warnings",
-             "sources", "destinations", "multicastDestinations", "type", "rate", "fixedSize", "trackBy"]
+             "sources", "destinations", "scalableSources", "scalableDestinations", "multicastDestinations", "type",
+             "rate", "fixedSize", "trackBy"]
     r = rest.select(ixn, f"{root}/traffic", properties=[], children=[rest.child(
         "^(trafficItem|endpointSet|configElement|frameRate|frameSize|transmissionControl|tracking)$", props)])
     name_of = {n.href.rstrip("/"): n.name for n in index.nodes}
@@ -361,6 +652,12 @@ def summarize(ixn: Any, index: ConfigIndex, names: list[str] | None) -> list[dic
             return f"vport:{name_of.get(h[:-len('/protocols')], h)}"
         return name_of.get(h, h)
 
+    def labels(es: dict[str, Any], side: str) -> list[str]:
+        scalable = es.get("scalable" + side.capitalize()) or []
+        return [label(h) for h in es.get(side) or []] + [
+            f"{label(s.get('arg1') or '')} [ports {s.get('arg2')}-{s.get('arg2', 0) + s.get('arg3', 0) - 1}, "
+            f"devices {s.get('arg4')}-{s.get('arg4', 0) + s.get('arg5', 0) - 1}]" for s in scalable]
+
     out = []
     for ti in r[0].get("trafficItem") or []:
         if names and ti.get("name") not in names:
@@ -369,8 +666,7 @@ def summarize(ixn: Any, index: ConfigIndex, names: list[str] | None) -> list[dic
         row = {
             "name": ti.get("name"), "type": ti.get("trafficType"), "state": ti.get("state"),
             "enabled": ti.get("enabled"), "bi_directional": ti.get("biDirectional"), "mesh": ti.get("srcDestMesh"),
-            "endpoint_sets": [{"sources": [label(h) for h in es.get("sources") or []],
-                               "destinations": [label(h) for h in es.get("destinations") or []],
+            "endpoint_sets": [{"sources": labels(es, "sources"), "destinations": labels(es, "destinations"),
                                **({"multicast": [m.get("arg3") for m in es.get("multicastDestinations") or []]}
                                   if es.get("multicastDestinations") else {})}
                               for es in ti.get("endpointSet") or []],
@@ -401,14 +697,20 @@ def read_full(ixn: Any, index: ConfigIndex, ti: Any) -> dict[str, Any]:
         n = name_of.get(h)
         return {"ref": n.name if n and n.name else (n.xpath if n else h)}
 
+    def subset(s: dict[str, Any]) -> dict[str, Any]:
+        return {**ref(s.get("arg1") or ""), "port_start": s.get("arg2"), "port_count": s.get("arg3"),
+                "device_start": s.get("arg4"), "device_count": s.get("arg5")}
+
     eps = []
     for es in ti.EndpointSet.find():
-        entry: dict[str, Any] = {"sources": [ref(h) for h in es.Sources or []]}
+        entry: dict[str, Any] = {"sources": [ref(h) for h in es.Sources or []] +
+                                 [subset(s) for s in es.ScalableSources or []]}
         if es.MulticastDestinations:
             entry["multicast_destinations"] = [{"group": m.get("arg3"), "step": m.get("arg4"), "count": m.get("arg5")}
                                                for m in es.MulticastDestinations]
         else:
-            entry["destinations"] = [ref(h) for h in es.Destinations or []]
+            entry["destinations"] = [ref(h) for h in es.Destinations or []] + \
+                [subset(s) for s in es.ScalableDestinations or []]
         eps.append(entry)
     ces = []
     for ce in ti.ConfigElement.find():
@@ -427,22 +729,15 @@ def read_full(ixn: Any, index: ConfigIndex, ti: Any) -> dict[str, Any]:
         elif tc.Type == "fixedDuration":
             transmission["duration"] = tc.Duration
         stack = []
-        for s in ce.Stack.find():
+        for s in ce.Stack.find():  # every header but the FCS, in packet order, so order and repeats round-trip
+            if _is_fcs(s):
+                continue
             # only what someone configured: non-auto fields that differ from their default
             fields = [f for f in s.Field.find() if f.Auto is False and not f.ReadOnly and not
-                      (f.ValueType == "singleValue" and str(f.SingleValue) == str(f.DefaultValue))]
-            if _is_base_layer(s.DisplayName) and not fields:
-                continue
-            entry = {"protocol": s.StackTypeId, "fields": []}
-            for f in fields:
-                fe: dict[str, Any] = {"field_name": f.DisplayName, "value_type": f.ValueType}
-                if f.ValueType == "singleValue":
-                    fe["single_value"] = f.SingleValue
-                elif f.ValueType in ("increment", "decrement"):
-                    fe.update(start_value=f.StartValue, step_value=f.StepValue, count=f.CountValue)
-                elif f.ValueType == "valueList":
-                    fe["value_list"] = f.ValueList
-                entry["fields"].append(fe)
+                      (f.ValueType == "singleValue" and _same_value(f.SingleValue, f.DefaultValue))]
+            entry: dict[str, Any] = {"protocol": s.StackTypeId}
+            if fields:
+                entry["fields"] = [_field_value(f) for f in fields]
             stack.append(entry)
         ces.append({"frame_rate": {"type": ce.FrameRate.Type, "rate": ce.FrameRate.Rate},
                     "frame_size": frame_size, "transmission": transmission, "stack": stack})
@@ -473,3 +768,25 @@ def packet_headers(ixn: Any, template: str | None, query: str | None) -> dict[st
                            ("enums", f.get("enumValues") or None), ("value_types", f.get("availableValueTypes")),
                            ("read_only", f.get("readOnly") or None)) if v not in (None, "", [])}
         for f in fields]}
+
+
+def item_packet(ti: Any, n: int, query: str | None) -> dict[str, Any]:
+    """The headers of one config element in packet order with every field's current value."""
+    ce = config_element(ti, n)
+    stacks = list(ce.Stack.find())
+    q = (query or "").lower()
+    headers = []
+    for label, s in zip(header_labels(stacks), stacks):
+        if q and q not in label.lower() and q not in (s.DisplayName or "").lower():
+            continue
+        fields = []
+        for f in s.Field.find():
+            fe = _field_value(f)
+            if f.Auto:
+                fe["auto"] = True
+            if f.ReadOnly:
+                fe["read_only"] = True
+            fields.append(fe)
+        headers.append({"header": label, "name": (s.DisplayName or "").strip(), "fields": fields})
+    return {"traffic_item": ti.Name, "config_element": n, "config_elements": len(list(ti.ConfigElement.find())),
+            "headers": headers}

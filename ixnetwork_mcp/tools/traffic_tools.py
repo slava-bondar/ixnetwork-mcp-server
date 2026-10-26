@@ -1,19 +1,20 @@
-"""Traffic tools: get_traffic_items, configure_traffic_items, describe_packet_headers,
-control_traffic, get_stats."""
+"""Traffic tools: get_traffic_items, configure_traffic_items, edit_packet_headers,
+describe_packet_headers, control_traffic, get_stats."""
 
 from __future__ import annotations
 
+import difflib
 from typing import Any, Literal
 
 from mcp.server.fastmcp import FastMCP
 from pydantic import ValidationError
 
-from .. import runtime
+from .. import rest, runtime
 from ..errors import GUARD_BLOCKED, IXN_ERROR, NOT_FOUND, VALIDATION, IxToolError
 from ..refs import ConfigIndex
 from ..session import SessionManager
 from ..traffic import engine, stats
-from ..traffic.models import TrafficItemConfig
+from ..traffic.models import HeaderChange, TrafficItemConfig
 from .common import DESTRUCTIVE, READ_ONLY, WRITE, ok, require_confirm
 
 
@@ -32,8 +33,47 @@ def _parse(items: list[dict[str, Any]]) -> list[TrafficItemConfig]:
     return parsed
 
 
+def _parse_changes(changes: list[dict[str, Any]]) -> list[HeaderChange]:
+    parsed, errors = [], []
+    for i, raw in enumerate(changes):
+        try:
+            parsed.append(HeaderChange.model_validate(raw))
+        except ValidationError as exc:
+            errors += [f"changes[{i}]{''.join('.' + str(x) for x in e['loc'])}: {e['msg']}" for e in exc.errors()[:10]]
+    if errors or not parsed:
+        raise IxToolError(VALIDATION, f"{len(errors) or 1} problem(s) in the changes; nothing was changed",
+                          errors=errors or ["no changes given"], hint="get_guide('traffic') describes the change shapes.")
+    return parsed
+
+
+def _item(ixn: Any, name: str) -> Any:
+    ti = engine.find_item(ixn, name)
+    if ti is None:
+        names = [t["name"] for t in rest.get(ixn, "traffic/trafficItem?includes=name")]
+        raise IxToolError(NOT_FOUND, f"no traffic item '{name}'",
+                          candidates=difflib.get_close_matches(name, names, n=8, cutoff=0.4) or None)
+    return ti
+
+
+def edit_headers(ixn: Any, name: str, changes: list[HeaderChange], n: int, dry_run: bool) -> dict[str, Any]:
+    ti = _item(ixn, name)
+    ce = engine.config_element(ti, n)
+    templates = engine.Templates(ixn)
+    after, problems = engine.check_header_edits(ixn, ce, changes, templates)
+    if problems:
+        raise IxToolError(VALIDATION, f"{len(problems)} problem(s); nothing was changed", errors=problems[:40],
+                          hint="describe_packet_headers(traffic_item=...) shows the headers and their fields.")
+    if dry_run:
+        return {"dry_run": True, "valid": True, "headers_after": after}
+    try:
+        return engine.edit_headers(ce, ti, changes, templates)
+    except engine.TrafficProblems as exc:
+        raise IxToolError(IXN_ERROR, "the header changes are applied but the item does not generate",
+                          errors=exc.problems[:20], hint="Fix or revert them with edit_packet_headers.") from None
+
+
 def configure(ixn: Any, cfgs: list[TrafficItemConfig], mode: str, dry_run: bool) -> dict[str, Any]:
-    index = ConfigIndex.build(ixn, props=["name"])
+    index = ConfigIndex.build(ixn, props=["name", "count", "ports"])  # count/ports bound device subsets
     plans, problems = [], []
     for cfg in cfgs:
         exists = engine.find_item(ixn, cfg.name) is not None
@@ -110,22 +150,49 @@ def register(app: FastMCP, manager: SessionManager) -> None:
         [{"protocol": "udp", "fields": [{"field_name": "UDP-Source-Port", "single_value": "1234"}]}]}],
         "flow_tracking": {"track_by": ["trackingenabled0", "sourceDestEndpointPair0"]}}.
         Endpoints are objects by name: ipv4/ipv6 stacks, network groups (route pools), dhcp clients,
-        device groups or topologies (find_nodes). Everything is resolved first; nothing changes if
-        anything is wrong. Items are generated; a warning about unresolved MACs is normal until
+        device groups or topologies (find_nodes). A subset of an object's devices: add "port_start" (1-based
+        or vport name), "port_count", "device_start", "device_count" (1-based, per port) to the endpoint.
+        "stack" lists headers in packet order; repeat a protocol for more of it (two "mpls" entries =
+        two labels). Everything is resolved first; nothing changes if anything is wrong. Items are generated; a warning about unresolved MACs is normal until
         protocols are started. Read get_guide('traffic') for all fields."""
         cfgs = _parse(items)
         ts = manager.resolve(target)
         result = await manager.call(target, lambda ixn: configure(ixn, cfgs, mode, dry_run), write=not dry_run)
         return ok(ts.target.name, result)
 
+    @app.tool(annotations=WRITE)
+    async def edit_packet_headers(traffic_item: str, changes: list[dict[str, Any]], config_element: int = 1,
+                                  dry_run: bool = False, target: str | None = None) -> dict[str, Any]:
+        """Change one traffic item's packet in place (endpoints, rate and tracking stay as they are),
+        then regenerate it. Headers are '<protocol>#<n>' (the n-th header of that protocol, e.g.
+        'mpls#2') or a 1-based position. changes, applied in order:
+        {"header": "mpls#2", "fields": [{"field_name": "Label Value", "single_value": "200"}]},
+        {"add": "mpls", "after": "mpls#2" | "before": "ipv4", "fields": [...]}, {"remove": "udp"}.
+        Fields take value_type singleValue|increment|decrement|random|valueList or "auto": true.
+        Everything is validated first; nothing changes if anything is wrong. config_element is
+        1-based (one per endpoint set). describe_packet_headers(traffic_item=...) shows the packet."""
+        parsed = _parse_changes(changes)
+        ts = manager.resolve(target)
+        return ok(ts.target.name, await manager.call(
+            target, lambda ixn: edit_headers(ixn, traffic_item, parsed, config_element, dry_run), write=not dry_run))
+
     @app.tool(annotations=READ_ONLY)
     async def describe_packet_headers(template: str | None = None, query: str | None = None,
+                                      traffic_item: str | None = None, config_element: int = 1,
                                       target: str | None = None) -> dict[str, Any]:
         """Packet header templates for traffic item stacks. Without `template`: list templates
         (filter with `query`, e.g. 'vxlan', 'tcp'). With `template` (e.g. 'udp'): its fields with
-        display names (use as field_name), formats, defaults, enum values and allowed value types."""
+        display names (use as field_name), formats, defaults, enum values and allowed value types.
+        With `traffic_item`: that item's packet in order, as 'mpls#2'-style headers with every
+        field's current value (`query` filters headers)."""
         ts = manager.resolve(target)
-        return ok(ts.target.name, await manager.call(target, lambda ixn: engine.packet_headers(ixn, template, query)))
+
+        def run(ixn):
+            if traffic_item:
+                return engine.item_packet(_item(ixn, traffic_item), config_element, query)
+            return engine.packet_headers(ixn, template, query)
+
+        return ok(ts.target.name, await manager.call(target, run))
 
     @app.tool(annotations=DESTRUCTIVE)
     async def control_traffic(action: Literal["generate", "apply", "start", "stop", "clear_stats"],
