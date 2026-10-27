@@ -8,7 +8,9 @@ agent writes, so values can be copied back unchanged:
     {"list": ["a", "b"]}                         value list
     {"string": "Router-{Inc:1,1}"}               string pattern
     {"random_range": {"min": .., "max": .., "step": .., "seed": ..}}
-    {"alternate": v} | {"random": true} | {"custom": {...}}
+    {"alternate": v} | {"random": true}
+    {"custom": {"start": s, "step": t, "increment": [{"count": n, "value": v}, ...]}}
+        custom: s, s+v, ... (n values per increment, increments may nest), then s+t, ...
 
 Optional keys on the dict forms (a single value becomes {"single": v, ...} when needed):
     "port_step": {"enabled": bool, "step": s}  nest owned by the topology ("Port Step")
@@ -52,7 +54,7 @@ def mv_to_value(mv: dict[str, Any], *, show_disabled_nest: bool = False) -> Any:
     elif pattern == "random":
         value = {"random": True}
     elif pattern == "custom":
-        value = {"custom": d}
+        value = {"custom": _custom_readback(d)}
     else:
         value = {"pattern": pattern, **d}
 
@@ -80,9 +82,26 @@ def mv_to_value(mv: dict[str, Any], *, show_disabled_nest: bool = False) -> Any:
     return {**value, **extras}
 
 
+def _custom_readback(d: dict[str, Any]) -> dict[str, Any]:
+    out = {k: d[k] for k in ("start", "step") if k in d}
+    incs = [_custom_increment(i) for i in d.get("increment") or [] if isinstance(i, dict)]
+    if incs:
+        out["increment"] = incs
+    return out
+
+
+def _custom_increment(i: dict[str, Any]) -> dict[str, Any]:
+    out = {k: i[k] for k in ("count", "value") if k in i}
+    kids = [_custom_increment(k) for k in i.get("increment") or [] if isinstance(k, dict)]
+    if kids:
+        out["increment"] = kids
+    return out
+
+
 # ---------------------------------------------------------------------------- write side
 
-PATTERN_KEYS = {"single", "start", "step", "direction", "list", "string", "random_range", "alternate", "random"}
+PATTERN_KEYS = {"single", "start", "step", "direction", "list", "string", "random_range", "alternate", "random",
+                "custom"}
 EXTRA_KEYS = {"port_step", "nest", "overlays"}
 _MAC = re.compile(r"^[0-9a-fA-F]{2}([:-][0-9a-fA-F]{2}){5}$")
 _HEX = re.compile(r"^(0x)?[0-9a-fA-F]*$")
@@ -133,7 +152,7 @@ def parse_value(raw: Any, attr: str = "value") -> ValueSpec:
     if unknown:
         raise ValueSyntaxError(
             f"{attr}: unknown keys {sorted(unknown)}; use a plain value, {{start, step, direction}}, {{list}}, "
-            "{string}, {random_range}, {alternate}, {single}, plus optional port_step / nest / overlays")
+            "{string}, {random_range}, {alternate}, {custom}, {single}, plus optional port_step / nest / overlays")
     if "single" in raw:
         spec = ValueSpec("singleValue", {"value": _scalar(raw["single"], attr)})
     elif "start" in raw or "step" in raw:
@@ -161,6 +180,15 @@ def parse_value(raw: Any, attr: str = "value") -> ValueSpec:
         spec = ValueSpec("alternate", {"value": _scalar(raw["alternate"], attr + ".alternate")})
     elif raw.get("random") is True:
         spec = ValueSpec("random", {})
+    elif "custom" in raw:
+        c = raw["custom"]
+        if not isinstance(c, dict) or "start" not in c or set(c) - {"start", "step", "increment"}:
+            raise ValueSyntaxError(f"{attr}: custom needs start (optional step, increment: [{{count, value}}])")
+        fields: dict[str, Any] = {"start": _scalar(c["start"], attr + ".custom.start"),
+                                  "step": _scalar(c.get("step", 0), attr + ".custom.step")}
+        if "increment" in c:
+            fields["increment"] = _increments(c["increment"], attr + ".custom.increment")
+        spec = ValueSpec("custom", fields)
     else:
         spec = ValueSpec(None)  # only port_step / nest / overlays: keep the current pattern
     if "port_step" in raw:
@@ -185,6 +213,36 @@ def parse_value(raw: Any, attr: str = "value") -> ValueSpec:
     if spec.pattern is None and not (spec.port_step or spec.nest or spec.overlays):
         raise ValueSyntaxError(f"{attr}: empty value")
     return spec
+
+
+def _increments(raw: Any, where: str) -> list[dict[str, Any]]:
+    if not isinstance(raw, list) or not raw:
+        raise ValueSyntaxError(f"{where}: expected a non-empty array of {{count, value}}")
+    out = []
+    for i, inc in enumerate(raw):
+        w = f"{where}[{i}]"
+        if not isinstance(inc, dict) or "count" not in inc or "value" not in inc or \
+                set(inc) - {"count", "value", "increment"}:
+            raise ValueSyntaxError(f"{w}: needs count and value (optional nested increment)")
+        try:
+            count = int(inc["count"])
+        except (TypeError, ValueError):
+            raise ValueSyntaxError(f"{w}.count: expected a whole number") from None
+        if count < 1:
+            raise ValueSyntaxError(f"{w}.count: must be >= 1")
+        entry: dict[str, Any] = {"count": count, "value": _scalar(inc["value"], w + ".value")}
+        if "increment" in inc:
+            entry["increment"] = _increments(inc["increment"], w + ".increment")
+        out.append(entry)
+    return out
+
+
+def _increment_values(incs: list[dict[str, Any]], where: str) -> list[tuple[str, str]]:
+    out = []
+    for i, inc in enumerate(incs):
+        out.append((inc["value"], f"{where}[{i}].value"))
+        out += _increment_values(inc.get("increment") or [], f"{where}[{i}].increment")
+    return out
 
 
 def _check(fmt: str | None, enums: list[str] | None, v: str, where: str, step: bool = False) -> str | None:
@@ -228,6 +286,11 @@ def validate_value(spec: ValueSpec, attr: str, fmt: str | None, enums: list[str]
         checks += [(f["start"], f"{attr}.start", False), (f["step"], f"{attr}.step", True)]
     elif spec.pattern == "valueList":
         checks += [(v, f"{attr}.list[{i}]", False) for i, v in enumerate(f["values"])]
+    elif spec.pattern == "custom":
+        if fmt in ("enum", "bool", "string"):
+            errs.append(f"{attr}: a custom pattern is not possible for {fmt} values")
+        checks += [(f["start"], f"{attr}.custom.start", False), (f["step"], f"{attr}.custom.step", True)]
+        checks += [(v, w, True) for v, w in _increment_values(f.get("increment") or [], f"{attr}.custom.increment")]
     elif spec.pattern == "repeatableRandomRange":
         checks += [(f[k], f"{attr}.random_range.{k}", k == "step") for k in ("min", "max", "step") if k in f]
     for o in spec.overlays or []:
@@ -251,7 +314,10 @@ def compile_value(node_xpath: str, attr: str, spec: ValueSpec, nest_count: int) 
     multivalue has (Port Step is the last one)."""
     mv = mv_xpath(node_xpath, attr)
     out: list[dict[str, Any]] = []
-    if spec.pattern:
+    if spec.pattern == "custom":
+        out.append({"xpath": f"{mv}/custom", "start": spec.fields["start"], "step": spec.fields["step"]})
+        out += _compile_increments(f"{mv}/custom", spec.fields.get("increment") or [])
+    elif spec.pattern:
         out.append({"xpath": f"{mv}/{spec.pattern}", **spec.fields})
     if spec.nest:
         if len(spec.nest) > nest_count:
@@ -263,6 +329,15 @@ def compile_value(node_xpath: str, attr: str, spec: ValueSpec, nest_count: int) 
         out.append({"xpath": f"{mv}/nest[{nest_count}]", **spec.port_step})
     if spec.overlays is not None:
         out += [{"xpath": f"{mv}/overlay[{i}]", **o} for i, o in enumerate(spec.overlays, 1)]
+    return out
+
+
+def _compile_increments(parent: str, incs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out = []
+    for i, inc in enumerate(incs, 1):
+        x = f"{parent}/increment[{i}]"
+        out.append({"xpath": x, "count": inc["count"], "value": inc["value"]})
+        out += _compile_increments(x, inc.get("increment") or [])
     return out
 
 
@@ -283,6 +358,11 @@ def _canon(fmt: str | None, v: Any) -> Any:
     return s.lower() if fmt in ("mac", "hex", "bool") else s
 
 
+def _norm_incs(incs: list[dict[str, Any]], fmt: str | None) -> list[Any]:
+    return [(int(i.get("count", 0)), _canon(fmt, i.get("value")), _norm_incs(i.get("increment") or [], fmt))
+            for i in incs]
+
+
 def same_value(spec: ValueSpec, readback: Any, fmt: str | None) -> bool:
     """Does a readback Value (mv_to_value) match what was requested?"""
     rb = readback if isinstance(readback, dict) else {"single": readback}
@@ -297,6 +377,12 @@ def same_value(spec: ValueSpec, readback: Any, fmt: str | None) -> bool:
             return False
     elif spec.pattern == "valueList":
         if [_canon(fmt, x) for x in rb.get("list", [])] != [_canon(fmt, x) for x in spec.fields["values"]]:
+            return False
+    elif spec.pattern == "custom":
+        c = rb.get("custom") or {}
+        if any(_canon(fmt, c.get(k)) != _canon(fmt, spec.fields[k]) for k in ("start", "step")):
+            return False
+        if _norm_incs(c.get("increment") or [], fmt) != _norm_incs(spec.fields.get("increment") or [], fmt):
             return False
     elif spec.pattern is not None:
         pass  # other patterns: trust the import result

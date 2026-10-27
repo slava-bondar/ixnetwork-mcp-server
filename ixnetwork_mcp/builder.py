@@ -21,7 +21,7 @@ from . import compiler, rest
 from .errors import IXN_ERROR, VALIDATION, IxToolError, map_exception
 from .refs import ConfigIndex, Node
 from .schema.index import SchemaIndex
-from .specs import ConfigSpec, PlanError, PlanNode, extension_plans, topology_plan
+from .specs import EVI_TYPES, ConfigSpec, PlanError, PlanNode, PlanRef, extension_plans, topology_plan
 from .values import ValueSyntaxError, compile_value, mv_to_value, parse_value, same_value, validate_value
 
 log = logging.getLogger("ixnetwork_mcp.builder")
@@ -37,6 +37,7 @@ REQUIREMENTS = {  # auto node type -> protocols that make IxNetwork create it
     "ospfRouteProperty": {"ospfv2"},
     "ospfv3RouteProperty": {"ospfv3"},
     "isisL3RouteProperty": {"isisL3"},
+    "ldpFECProperty": {"ldpBasicRouter"},
 }
 CONTAINERS = ("deviceGroup", "networkGroup")
 # semantic rules IxNetwork enforces at commit time (not expressed in the schema)
@@ -185,6 +186,9 @@ class _Validator:
             if m.get("deprecated"):
                 self.err(f"{node.label}.{attr}: deprecated on this IxNetwork build")
                 continue
+            if isinstance(raw, PlanRef):  # bound by bind_refs, filled in by fill_refs
+                plain[attr] = raw
+                continue
             if m["kind"] == "multivalue":
                 try:
                     spec = parse_value(raw, f"{node.label}.{attr}")
@@ -218,6 +222,66 @@ class _Validator:
         self.check_exclusive(node.label, {c.type for c in node.children} | existing_children)
         children = [c for c in (self.check(ch, tp, own) for ch in node.children) if c]
         return _Checked(node, tp, plain, mv, fmts, has_nest, children)
+
+
+# ---------------------------------------------------------------------------- references
+
+def bind_refs(unit: Unit, ck: _Checked, index: ConfigIndex) -> list[str]:
+    """Point every PlanRef (a pool's EVPN instance) at its target in the pool's device group: an
+    object planned there, or, when the unit extends an existing device group, an existing one."""
+    errors: list[str] = []
+    existing_dg = None
+    if unit.parent is not None:
+        existing_dg = unit.parent if unit.parent.type == "deviceGroup" else _nearest_device_group(index, unit.parent)
+
+    def planned_in(dg: _Checked, ref: PlanRef) -> list[PlanNode]:
+        found: list[PlanNode] = []
+
+        def walk(c: _Checked) -> None:
+            for ch in c.children:
+                if ch.node.type in CONTAINERS:
+                    continue
+                if ch.node.type in ref.types and ch.node.plain.get("name") == ref.name:
+                    found.append(ch.node)
+                walk(ch)
+        walk(dg)
+        return found
+
+    def bind(ref: PlanRef, dg: _Checked | None) -> None:
+        if dg is not None:
+            hits: list[Any] = planned_in(dg, ref)
+            where = f"device group '{dg.node.plain.get('name')}'"
+        else:
+            prefix = (existing_dg.xpath + "/") if existing_dg else None
+            hits = [n.xpath for n in index.by_name.get(ref.name, [])
+                    if n.type in ref.types and prefix and n.xpath.startswith(prefix)]
+            where = f"device group '{existing_dg.name}'" if existing_dg else "this object's device group"
+        if len(hits) == 1:
+            ref.target = hits[0]
+        else:
+            errors.append(f"{ref.label}: no {' / '.join(ref.types)} named '{ref.name}' in {where}"
+                          if not hits else f"{ref.label}: '{ref.name}' is ambiguous in {where}")
+
+    def visit(c: _Checked, dg: _Checked | None) -> None:
+        if c.node.type == "deviceGroup":
+            dg = c
+        for value in c.plain.values():
+            if isinstance(value, PlanRef):
+                bind(value, dg)
+        for ch in c.children:
+            visit(ch, dg)
+
+    visit(ck, None)
+    return errors
+
+
+def fill_refs(entries: list[dict[str, Any]], planned: list[tuple[_Checked, str]]) -> None:
+    """Replace bound PlanRefs in compiled import entries by the target's xpath."""
+    xpath_of = {id(ck.node): xp for ck, xp in planned}
+    for e in entries:
+        for k, value in e.items():
+            if isinstance(value, PlanRef):
+                e[k] = value.target if isinstance(value.target, str) else xpath_of[id(value.target)]
 
 
 # ---------------------------------------------------------------------------- compile
@@ -334,8 +398,10 @@ def apply(ixn: Any, schema: SchemaIndex, raw_spec: Any, *, dry_run: bool = False
     v = _Validator(schema, index)
     v.errors += plan_errors
     checked: list[tuple[Unit, _Checked]] = []
+    ldp_routers = {u.parent.xpath for u in units if u.parent is not None and u.plan.type == "ldpBasicRouter"}
     topo_specs = {f"topologies[{i}]": t for i, t in enumerate(spec.topologies)}
     for unit in units:
+        dg = None
         if unit.parent is None:
             v.check_ports(unit, topo_specs[unit.label].ports)
             ctx: set[str] = set()
@@ -344,14 +410,29 @@ def apply(ixn: Any, schema: SchemaIndex, raw_spec: Any, *, dry_run: bool = False
             parent_tp = unit.parent.type_path
             dg = _nearest_device_group(index, unit.parent)
             ctx = (_existing_protocols(index, dg) if dg else set()) | _protocols_in(unit.plan) | {unit.plan.type}
+            if dg is not None and dg.xpath in ldp_routers:  # an LDP router added in the same call
+                ctx.add("ldpBasicRouter")
         if unit.parent is not None:  # a new child must also be compatible with the parent's existing children
             existing = [c.type for c in index.children(unit.parent)]
             v.check_exclusive(unit.label, set(existing) | {unit.plan.type})
             if unit.plan.type in ("ipv4PrefixPools", "ipv6PrefixPools") and unit.plan.type in existing:
                 v.err(f"{unit.label}: {unit.parent.name or unit.parent.xpath} already has an "
                       f"{unit.plan.type[:4]} pool (one IPv4 and one IPv6 pool per network group)")
+            if unit.plan.type in EVI_TYPES and set(EVI_TYPES) & set(existing):
+                v.err(f"{unit.label}: {unit.parent.name or unit.parent.xpath} already has an EVPN instance "
+                      f"(IxNetwork allows one per BGP peer; its multiplier gives several EVIs)")
+            needs_segment = unit.plan.type == "bgpIPv4EvpnEvi" or \
+                (unit.plan.type in EVI_TYPES and (unit.plan.plain.get("multiplier") or 1) > 1)
+            if needs_segment and "bgpEthernetSegmentV4" not in existing:
+                v.err(f"{unit.label}: IxNetwork needs an Ethernet segment on the peer for an MPLS EVI or an EVI count above 1: set "
+                      f"{unit.parent.name or unit.parent.xpath}'s ethernetSegmentsCountV4 to 1 (and evpn to "
+                      f"true) with set_attributes first")
+            if unit.plan.type == "ldpConnectedInterface" and "ldpBasicRouter" not in ctx:
+                v.err(f"{unit.label}: the device group has no LDP router; add ldp_router to it in the same "
+                      f"call (extend its device group)")
         ck = v.check(unit.plan, parent_tp, ctx)
         if ck:
+            v.errors += bind_refs(unit, ck, index)
             checked.append((unit, ck))
     if v.errors:
         raise IxToolError(VALIDATION, f"{len(v.errors)} problem(s) in the spec; nothing was changed",
@@ -364,6 +445,7 @@ def apply(ixn: Any, schema: SchemaIndex, raw_spec: Any, *, dry_run: bool = False
             planned: list[tuple[_Checked, str]] = []
             anchor = f"{unit.parent.xpath if unit.parent else ''}/{ck.node.type}[new]"
             compile_subtree(ck, anchor, True, entries, planned)
+            fill_refs(entries, planned)
             plans.append({"unit": unit.label, "create": ck.node.type, "name": ck.node.plain.get("name"),
                           "under": unit.parent.xpath if unit.parent else "/", "objects": len(planned),
                           "import_entries": entries[:MAX_DRY_RUN_ENTRIES],
@@ -382,6 +464,7 @@ def apply(ixn: Any, schema: SchemaIndex, raw_spec: Any, *, dry_run: bool = False
             entries: list[dict[str, Any]] = []
             planned: list[tuple[_Checked, str]] = []
             compile_subtree(ck, xpath, True, entries, planned)
+            fill_refs(entries, planned)
             outcome = compiler.run_import(ixn, entries)
             problems = outcome.errors + _verify(ixn, href, planned)
             if problems:

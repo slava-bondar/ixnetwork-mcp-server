@@ -9,6 +9,7 @@ Errors come back as JSON: `{"code", "message", "hint", ...}`.
 | VALIDATION | bad input (e.g. unsupported ref, bad value) | fix the input as the hint says |
 | GUARD_BLOCKED | the inventory forbids this action on this target | tell the user |
 | CONFIRM_REQUIRED | destructive action called without `confirm=true` | ask the user, then repeat with `confirm=true` |
+| CONFIRM_DECLINED | the user declined the confirmation the server asked for | stop; do not retry unless the user asks again |
 | IXN_UNREACHABLE | REST API not reachable | the IxNetwork GUI may be closed or restarting |
 | IXN_AUTH | credentials rejected | inventory credentials are wrong |
 | IXN_BUSY | IxNetwork reported API contention (HTTP 409) | wait for the running operation, retry |

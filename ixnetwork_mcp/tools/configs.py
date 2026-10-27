@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import Context, FastMCP
 
 from .. import configstore
 from ..session import SessionManager
 from ..errors import GUARD_BLOCKED, IxToolError
-from .common import DESTRUCTIVE, READ_ONLY, WRITE, ok, require_confirm
+from .common import DESTRUCTIVE, READ_ONLY, WRITE, confirm_action, ok
 
 
 def _guard_clear(ts) -> None:
@@ -66,29 +66,30 @@ def register(app: FastMCP, manager: SessionManager) -> None:
     @app.tool(annotations=DESTRUCTIVE)
     async def load_config(name_or_path: str, method: Literal["ixncfg", "json"] = "ixncfg",
                           port_map: dict[str, str] | None = None, confirm: bool = False, wait_s: int = 90,
-                          target: str | None = None) -> dict[str, Any]:
+                          target: str | None = None, ctx: Context | None = None) -> dict[str, Any]:
         """Replace the running configuration with a saved one ("apply/restore the X config").
         method 'ixncfg' restores exactly (same or newer IxNetwork build); 'json' rebuilds from the
         portable export (e.g. on another VM/build). port_map {"<vport name or old location>":
         "<new chassis/card.port>"} moves ports when the chassis differs. Everything currently
         configured is replaced: ask the user (and offer save_config first), then confirm=true. Needs
         the target's guards.allow_clear_config. Reports port states and drift against the save."""
-        require_confirm(confirm, f"replacing the running configuration with '{name_or_path}'")
         ts = manager.resolve(target)
         _guard_clear(ts)
+        await confirm_action(ctx, ts, confirm, f"replacing the whole running configuration with '{name_or_path}'")
         saved = configstore.resolve_saved(ts.target.saved_configs_dir, name_or_path)
         result = await manager.call(target, lambda ixn: configstore.load(ixn, saved, method, port_map, max(0, wait_s)),
                                     write=True)
         return ok(ts.target.name, result, warnings=result.pop("warnings", None))
 
     @app.tool(annotations=DESTRUCTIVE)
-    async def new_config(confirm: bool = False, target: str | None = None) -> dict[str, Any]:
+    async def new_config(confirm: bool = False, target: str | None = None,
+                         ctx: Context | None = None) -> dict[str, Any]:
         """Clear the whole configuration (topologies, traffic, vports — ports are released).
         Ask the user (and offer save_config first), then confirm=true. Needs the target's
         guards.allow_clear_config."""
-        require_confirm(confirm, "clearing the whole configuration")
         ts = manager.resolve(target)
         _guard_clear(ts)
+        await confirm_action(ctx, ts, confirm, "clearing the whole configuration")
 
         def run(ixn):
             ixn.NewConfig()

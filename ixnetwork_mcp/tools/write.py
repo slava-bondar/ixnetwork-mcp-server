@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import Context, FastMCP
 
 from .. import compiler
 from ..errors import GUARD_BLOCKED, IxToolError
 from ..session import SessionManager
-from .common import DESTRUCTIVE, WRITE, WRITE_IDEMPOTENT, ok, require_confirm
+from .common import DESTRUCTIVE, WRITE, WRITE_IDEMPOTENT, confirm_action, ok
 from .schema_tools import schema_for
 
 
@@ -50,14 +50,15 @@ def register(app: FastMCP, manager: SessionManager) -> None:
         return ok(ts.target.name, result, warnings=warnings + result.pop("warnings", []))
 
     @app.tool(annotations=DESTRUCTIVE)
-    async def delete_nodes(refs: list[str], confirm: bool = False, target: str | None = None) -> dict[str, Any]:
+    async def delete_nodes(refs: list[str], confirm: bool = False, target: str | None = None,
+                           ctx: Context | None = None) -> dict[str, Any]:
         """Delete objects (and everything below them) by exact reference: names, 'type:name',
         xpaths or hrefs. Only objects that can be deleted are accepted (auto-created ones cannot).
         This is live in the user's GUI and cannot be undone: ask the user first (and offer
         save_config), then call with confirm=true."""
-        require_confirm(confirm, f"deleting {len(refs)} object(s)")
-        schema, warnings = await schema_for(manager, target)
         ts = manager.resolve(target)
+        await confirm_action(ctx, ts, confirm, f"deleting {len(refs)} object(s): {', '.join(refs[:5])}")
+        schema, warnings = await schema_for(manager, target)
         result = await manager.call(target, lambda ixn: compiler.delete_nodes(ixn, schema, refs), write=True)
         return ok(ts.target.name, result, warnings=warnings)
 
@@ -80,7 +81,8 @@ def register(app: FastMCP, manager: SessionManager) -> None:
 
     @app.tool(annotations=DESTRUCTIVE)
     async def run_operation(operation: str, ref: str | None = None, args: dict[str, Any] | None = None,
-                            confirm: bool = False, target: str | None = None) -> dict[str, Any]:
+                            confirm: bool = False, target: str | None = None,
+                            ctx: Context | None = None) -> dict[str, Any]:
         """Run an IxNetwork operation on an object (`ref`; omit for root operations), e.g.
         'getAllLearnedInfo' on a BGP peer or 'sendArp' on an ipv4 stack. describe_node_type(...,
         include=['operations']) lists the operations and their arguments; `args` supplies extra
@@ -93,7 +95,7 @@ def register(app: FastMCP, manager: SessionManager) -> None:
         compiler.check_denied(operation)
         is_read = compiler.is_read_operation(operation)
         if not is_read:
-            require_confirm(confirm, f"operation '{operation}'")
+            await confirm_action(ctx, ts, confirm, f"operation '{operation}'" + (f" on '{ref}'" if ref else ""))
         result = await manager.call(target, lambda ixn: compiler.run_operation(ixn, schema, ref, operation, args),
                                     write=not is_read)
         return ok(ts.target.name, result, warnings=warnings)

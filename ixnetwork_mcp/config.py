@@ -42,6 +42,9 @@ class Guards(BaseModel):
     allow_traffic_start: bool = True
     allow_port_takeover: bool = False
     allow_raw_import: bool = False
+    # destructive actions only after the user confirmed in the MCP client (elicitation);
+    # an agent's confirm=true is not enough, so clients without elicitation cannot run them
+    require_human_confirmation: bool = False
 
 
 class Target(BaseModel):
@@ -67,6 +70,11 @@ class Target(BaseModel):
     @property
     def saved_configs_dir(self) -> Path:
         return self.config_dir or (DEFAULT_HOME / "configs" / self.name).expanduser()
+
+    @property
+    def exports_dir(self) -> Path:
+        """Where tools write files the user asked for (CSV tables, captures, reports)."""
+        return (DEFAULT_HOME / "exports" / self.name).expanduser()
 
     def public(self) -> dict[str, Any]:
         """Description safe to show to the agent (no secrets)."""

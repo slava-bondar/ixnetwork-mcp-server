@@ -54,7 +54,8 @@ traffic items; `get_traffic_items(detail="full")` returns them in the same forma
 |---|---|
 | `traffic_type` | ipv4, ipv6, ethernetVlan, raw |
 | `src_dest_mesh` | oneToOne, manyToMany, fullMesh |
-| `frame_rate.type` | percentLineRate, framesPerSecond, bitsPerSecond, interPacketGap |
+| `self_destined` | true when a source and a destination share a port (e.g. two device groups on one port) |
+| `frame_rate.type` | percentLineRate, framesPerSecond, bitsPerSecond, interPacketGap (on 100G ports 1 % is 1 Gbps: use framesPerSecond for low rates) |
 | `frame_size.type` | fixed (`fixed_size`), increment (`min_size`, `max_size`, `step_size`), random (`min_size`, `max_size`), quadGaussian, weightedPairs |
 | `transmission.type` | continuous, fixedFrameCount (`frame_count`), fixedDuration (`duration`), auto / custom / burstFixedDuration |
 
@@ -100,3 +101,36 @@ Headers are named `<protocol>#<n>` or by 1-based position. Use `dry_run=true` to
 Until MACs resolve, items show a note about unresolved destination MACs, and `apply` fails with "No Flow Groups". This is normal before protocols are up.
 
 **Delete** traffic items with `delete_nodes(['trafficItem:<name>'], confirm=true)`.
+
+**Packet capture** (`control_capture`, `get_capture`), per vport and only on the ports you name:
+1. For data (hardware) capture: `control_traffic('apply')` first. An Apply stops a running data
+   capture, and `control_traffic` warns when it does.
+2. `control_capture('start', ports=[...], mode='data'|'control'|'both')`. Control capture holds
+   protocol packets (ARP, BGP, OSPF …); data capture holds traffic. Data capture needs the vport's
+   rxMode `captureAndMeasure`.
+3. Start traffic or protocols, wait, then `control_capture('stop', ports=[...])`.
+4. `get_capture(port, mode)` shows the packet count and decoded headers of a few packets.
+   `control_capture('save')` downloads the capture files (pcapng, named `.cap`) for Wireshark.
+5. `control_capture('release', ports=[...])` disables capture again.
+
+**RFC 2544 QuickTests** (throughput, frame_loss, back_to_back) run over existing traffic items:
+1. Create the traffic items with `configure_traffic_items`. Start protocols so the items generate. A run
+   first resolves the endpoints' devices (ARP/ND): with nobody answering it stops with "Failed to resolve
+   NGPF devices" (raw vport items need no resolution).
+2. `configure_quick_test(name, kind='throughput', traffic_items=[...], frame_sizes=[64, 512, 1518],
+   duration_s=30, load={'initial': 10, 'min': 1, 'max': 100, 'unit': 'percentMaxRate'},
+   latency='cutThrough', pass_criteria={'min_rate': 98})`. Calling it again with the same name
+   updates the test. Other settings go in `test_config` with REST names, e.g. the frame-loss load
+   `initialStepLoadRate`, `maxStepLoadRate`, `stepStepLoadRate`, `stepLoadUnit`;
+   `describe_node_type('quickTest/<family>/testConfig')` lists them.
+   - Rates are a percentage of line rate unless every load unit says otherwise (`fpsRate` …).
+   - Learning frames go out before the trials at their own rate (~77k fps on a 100G port by default);
+     `learn_frames={'learnFrequency': 'never'}` or a lower `learnRate` keeps a test gentle.
+   - Back-to-back runs are long: they binary-search the burst length.
+3. `control_quick_test(name, 'apply')`, then `control_quick_test(name, 'start', wait_s=...)`. A run
+   takes over the whole session's traffic and sends packets, so ask the user first. It needs the
+   target's `allow_traffic_start`. `finished: false` means the run continues on the server.
+4. `get_quick_test_results(name)` while the test runs and afterwards. Then
+   `control_quick_test(name, 'report')` downloads the PDF report.
+5. `control_quick_test(name, 'delete')` removes the test.
+

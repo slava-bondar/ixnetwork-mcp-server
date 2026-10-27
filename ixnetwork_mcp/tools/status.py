@@ -7,7 +7,7 @@ from typing import Any, Literal
 
 from mcp.server.fastmcp import FastMCP
 
-from .. import rest
+from .. import learned, rest
 from ..refs import ConfigIndex
 from ..session import SessionManager
 from .common import READ_ONLY, ok
@@ -102,3 +102,26 @@ def register(app: FastMCP, manager: SessionManager) -> None:
         ts = manager.resolve(target)
         return ok(ts.target.name, await manager.call(
             target, lambda ixn: status(ixn, scope, detail == "per_device", only_problems)))
+
+    @app.tool(annotations=READ_ONLY)
+    async def get_learned_info(
+        ref: str,
+        kind: Literal["all", "ipv4", "ipv6", "evpn", "vpn", "linkstate", "basic", "detailed"] = "all",
+        devices: str | None = None,
+        columns: list[str] | None = None,
+        filters: dict[str, str] | None = None,
+        max_rows: int = 50,
+        save_csv: bool = False,
+        target: str | None = None,
+    ) -> dict[str, Any]:
+        """Routes, LSAs and adjacencies that running BGP / OSPF / IS-IS learned. `ref`: a protocol
+        object, or a device group/topology (all below it); `kind` applies per protocol (BGP: all,
+        ipv4, ipv6, evpn, vpn, linkstate; OSPF: all, basic, detailed). `devices` "1-3,7". Returns up
+        to max_rows rows per table (`filters` {column: regex}, `columns`); save_csv writes every row
+        to ~/.ixnetwork-mcp/exports/<target>/. Empty until sessions are up."""
+        ts = manager.resolve(target)
+        results = await manager.call(target, lambda ixn: learned.collect(ixn, ref, kind, devices))
+        out: dict[str, Any] = {"objects": learned.shape(results, columns, filters, max(1, max_rows))}
+        if save_csv:
+            out["csv"] = learned.write_csv(results, ts.target.exports_dir)
+        return ok(ts.target.name, out, truncated=any(t["truncated"] for r in out["objects"] for t in r["tables"]))

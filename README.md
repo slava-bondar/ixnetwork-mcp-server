@@ -4,9 +4,10 @@ An [MCP](https://modelcontextprotocol.io) server that lets an AI agent drive a K
 IxNetwork **Windows GUI** instance through its REST API (port 11009, session 1):
 
 - inspect ports, topologies, protocol sessions and traffic
-- build NGPF topologies and protocol stacks declaratively: Ethernet/VLAN, IPv4/IPv6, BGP,
-  OSPFv2/v3, IS-IS, IGMP/MLD, DHCPv4/v6 client and server, loopbacks, network groups with
-  route pools
+- build NGPF topologies and protocol stacks declaratively: Ethernet/VLAN, IPv4/IPv6, BGP
+  (including EVPN over VXLAN or MPLS: Type-5 prefix pools and Type-2 MAC/IP pools), LDP,
+  OSPFv2/v3, IS-IS (including Segment Routing), IGMP/MLD, DHCPv4/v6 client and server,
+  loopbacks, network groups with route pools
 - create traffic items between the configured endpoints, run protocols and traffic, and read
   statistics
 - save, compare and restore configurations
@@ -53,6 +54,10 @@ options.
   The Windows GUI API server needs no credentials by default.
 - `guards` control what the agent may do on that target (`read_only`, clearing/loading the
   configuration, starting traffic, taking over chassis ports owned by other sessions, raw imports).
+- Destructive actions are confirmed by you: if your MCP client supports elicitation, the server
+  asks you directly in the client; otherwise the agent must pass `confirm=true` after asking you in
+  chat. `"require_human_confirmation": true` in `guards` refuses the agent's `confirm=true`, so such
+  actions only run from clients that can ask you.
 - Saved configurations go to `~/.ixnetwork-mcp/configs/<target>/` (override with `config_dir`).
 
 ## Register with an MCP client
@@ -92,17 +97,20 @@ Options: `-T/--targets a,b` exposes only some inventory entries, and
 | `list_ports` | vports and chassis ports (owners, link state, LLDP neighbours) |
 | `find_nodes` / `get_node` | find objects by type / name / subtree; show one object's values and state |
 | `get_protocol_status` | per-protocol session up/down counts, errors, per-device state |
+| `get_learned_info` | routes / LSAs / adjacencies learned by BGP, OSPF and IS-IS (inline, or all rows to CSV) |
 | `search_node_types` / `describe_node_type` | the IxNetwork object model: attributes, formats, enums, defaults, children, operations |
 | `export_config` | scoped export in IxNetwork's import format |
 | `apply_config` | declarative build of topologies, protocol stacks and network groups, or additions to existing objects |
 | `set_attributes` / `add_node` / `delete_nodes` | change, create or delete individual objects |
 | `run_operation` / `import_config_fragment` | IxNetwork operations and raw imports (advanced) |
 | `assign_ports` / `unassign_ports` | connect vports to chassis ports |
-| `control_protocols` | start / stop / restart down sessions / apply changes on the fly |
+| `control_protocols` | start / stop / restart down sessions / apply changes on the fly; whole objects or selected devices |
 | `configure_traffic_items` / `get_traffic_items` | create, update and read traffic items |
 | `describe_packet_headers` / `edit_packet_headers` | packet header templates, an item's packet, and in-place header edits (e.g. MPLS labels) |
 | `control_traffic` | generate / apply / start / stop traffic, clear statistics |
 | `get_stats` | statistics views with row filters |
+| `configure_quick_test` / `control_quick_test` / `get_quick_test_results` | RFC 2544 QuickTests (throughput, frame loss, back-to-back) over traffic items, with the PDF report |
+| `control_capture` / `get_capture` | packet capture on named ports: start / stop / release, decoded digest, download capture files |
 | `save_config` / `list_saved_configs` / `check_drift` / `load_config` / `new_config` | save, compare and restore configurations |
 | `get_guide` | usage guide for the agent: workflow, spec, traffic, hierarchy, values, safety, troubleshooting |
 

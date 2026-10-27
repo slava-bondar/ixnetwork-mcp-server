@@ -9,6 +9,10 @@
   forbids the action — tell the user; do not try to work around it.
 - `delete_nodes` and state-changing `run_operation` calls return `CONFIRM_REQUIRED` unless
   `confirm=true`: ask the user first. Port location changes go through the port tools only.
+- If the MCP client supports elicitation, the server itself asks the user to confirm destructive
+  actions (then `confirm` is ignored). `CONFIRM_DECLINED` means the user said no: do not retry
+  unless they ask again. Targets with `guards.require_human_confirmation` only accept that
+  confirmation, never `confirm=true`.
 - Nothing is saved automatically. Before a destructive action, ask the user whether to save the
   current configuration first.
 - The chassis ports may be cabled to a device under test: starting protocols or traffic sends

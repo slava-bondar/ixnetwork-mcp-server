@@ -11,6 +11,7 @@ the same form:
 | `{"list": ["a", "b", "c"]}` | explicit value per device (cycled) |
 | `{"string": "Router-{Inc:1,1}"}` | string pattern |
 | `{"random_range": {"min": .., "max": .., "step": .., "seed": ..}}` | repeatable random |
+| `{"custom": {"start": 10001, "step": 0, "increment": [{"count": 2, "value": 1}]}}` | custom: `count` values `value` apart (increments may nest), then the next block `step` further: 10001, 10002, 10001, 10002 … |
 
 Extra keys that may appear:
 - `port_step: {"enabled": true, "step": "0.1.0.0"}` — added per port when a topology spans

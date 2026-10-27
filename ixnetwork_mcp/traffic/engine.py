@@ -21,6 +21,7 @@ import re
 from typing import Any
 
 from .. import rest
+from ..errors import IxToolError, map_exception
 from ..refs import ConfigIndex, Node
 from .models import (ConfigElementConfig, EndpointRef, EndpointSetConfig, FlowTrackingConfig, FrameSizeType,
                      HeaderChange, PacketHeaderField, TrafficItemConfig, TransmissionType)
@@ -433,20 +434,35 @@ def create(ixn: Any, cfg: TrafficItemConfig, index: ConfigIndex, templates: Temp
         errors, warnings = _finish(ti, cfg, templates)
         if errors:
             raise TrafficProblems(errors)
-    except Exception:
+    except Exception as exc:
         try:
             ti.remove()
-        except Exception as exc:  # noqa: BLE001
-            log.warning("could not remove half-built traffic item %s: %s", cfg.name, exc)
+        except Exception as cleanup_exc:  # noqa: BLE001
+            log.warning("could not remove half-built traffic item %s: %s", cfg.name, cleanup_exc)
+        _raise_self_destined_hint(exc, cfg)
         raise
     return _outcome(ti, warnings, "created")
+
+
+def _raise_self_destined_hint(exc: Exception, cfg: TrafficItemConfig) -> None:
+    """IxNetwork refuses endpoint sets whose source and destination share a port unless the item
+    allows self-destined traffic; say which key fixes it."""
+    if cfg.self_destined or "not self destined" not in str(exc):
+        return
+    err = map_exception(exc)
+    raise IxToolError(err.code, err.message, "A source and a destination share a port: set self_destined: true.",
+                      **err.extra) from exc
 
 
 def update(ixn: Any, cfg: TrafficItemConfig, ti: Any, index: ConfigIndex, templates: Templates) -> dict[str, Any]:
     resolved = resolve_endpoint_sets(index, cfg)
     ti.update(TrafficType=cfg.traffic_type.value, BiDirectional=cfg.bi_directional, SrcDestMesh=cfg.src_dest_mesh,
               AllowSelfDestined=cfg.self_destined, Enabled=cfg.enabled)
-    _set_endpoint_sets(ti, resolved)
+    try:
+        _set_endpoint_sets(ti, resolved)
+    except Exception as exc:
+        _raise_self_destined_hint(exc, cfg)
+        raise
     errors, warnings = _finish(ti, cfg, templates)
     if errors:
         raise TrafficProblems(errors)

@@ -13,7 +13,8 @@ Topics (read with `get_guide(topic)`):
 - `values` — how per-device values (multivalues) are shown and written
 
 Tools available now:
-- look around: `list_targets`, `get_session_overview`, `list_ports`, `get_protocol_status`
+- look around: `list_targets`, `get_session_overview`, `list_ports`, `get_protocol_status`,
+  `get_learned_info`
 - find and inspect objects: `find_nodes`, `get_node`, `export_config`
 - learn the object model: `search_node_types`, `describe_node_type`, `get_guide`
 - build configuration declaratively: `apply_config` (whole topologies, or additions via `extend`)
@@ -21,7 +22,8 @@ Tools available now:
   `import_config_fragment` (advanced)
 - ports and protocols: `assign_ports`, `unassign_ports`, `control_protocols`
 - traffic: `configure_traffic_items`, `get_traffic_items`, `describe_packet_headers`, `edit_packet_headers`,
-  `control_traffic`, `get_stats`
+  `control_traffic`, `get_stats`, `control_capture`, `get_capture`
+- RFC 2544 QuickTests: `configure_quick_test`, `control_quick_test`, `get_quick_test_results`
 - save / compare / restore (only when the user asks): `save_config`, `list_saved_configs`,
   `check_drift`, `load_config`, `new_config`
 

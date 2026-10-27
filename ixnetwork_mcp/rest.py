@@ -16,7 +16,7 @@ from typing import Any
 
 MV_INLINES: list[dict[str, Any]] = [
     {"child": "multivalue", "properties": ["format", "pattern", "count", "enums", "availablePatterns"]},
-    {"child": "^(singleValue|counter|valueList|string|alternate|repeatableRandomRange|random|custom|nest|overlay)$",
+    {"child": "^(singleValue|counter|valueList|string|alternate|repeatableRandomRange|random|custom|increment|nest|overlay)$",
      "properties": ["*"]},
 ]
 

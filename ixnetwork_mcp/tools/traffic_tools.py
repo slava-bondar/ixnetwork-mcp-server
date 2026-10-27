@@ -6,7 +6,7 @@ from __future__ import annotations
 import difflib
 from typing import Any, Literal
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import Context, FastMCP
 from pydantic import ValidationError
 
 from .. import rest, runtime
@@ -15,7 +15,7 @@ from ..refs import ConfigIndex
 from ..session import SessionManager
 from ..traffic import engine, stats
 from ..traffic.models import HeaderChange, TrafficItemConfig
-from .common import DESTRUCTIVE, READ_ONLY, WRITE, ok, require_confirm
+from .common import DESTRUCTIVE, READ_ONLY, WRITE, confirm_action, ok
 
 
 def _parse(items: list[dict[str, Any]]) -> list[TrafficItemConfig]:
@@ -197,7 +197,7 @@ def register(app: FastMCP, manager: SessionManager) -> None:
     @app.tool(annotations=DESTRUCTIVE)
     async def control_traffic(action: Literal["generate", "apply", "start", "stop", "clear_stats"],
                               items: list[str] | None = None, wait_s: int = 30, confirm: bool = False,
-                              target: str | None = None) -> dict[str, Any]:
+                              target: str | None = None, ctx: Context | None = None) -> dict[str, Any]:
         """Traffic runtime: 'generate' rebuilds flows (after protocols are up so MACs resolve),
         'apply' pushes them to the ports, 'start' / 'stop' (all, or the named `items`),
         'clear_stats'. start sends packets to the device under test: it needs the target's
@@ -207,7 +207,7 @@ def register(app: FastMCP, manager: SessionManager) -> None:
         if action == "start":
             if not ts.target.guards.allow_traffic_start:
                 raise IxToolError(GUARD_BLOCKED, f"starting traffic is disabled for target '{ts.target.name}'")
-            require_confirm(confirm, "starting traffic")
+            await confirm_action(ctx, ts, confirm, "starting traffic" + (f" ({', '.join(items[:5])})" if items else " (all items)"))
         return ok(ts.target.name, await manager.call(
             target, lambda ixn: runtime.control_traffic(ixn, action, items, max(0, wait_s)), write=True))
 

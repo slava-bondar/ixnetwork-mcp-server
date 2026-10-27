@@ -38,6 +38,10 @@ DEFAULT_SCOPE: list[tuple[str, int | None]] = [
     ("availableHardware", 2),
     ("locations", 2),
     ("lag", 0),
+    ("quickTest", 0),  # QuickTest families the tools support (each family is a large subtree)
+    ("quickTest/rfc2544throughput", None),
+    ("quickTest/rfc2544frameLoss", None),
+    ("quickTest/rfc2544back2back", None),
 ]
 
 # Children that are pure plumbing and would multiply the crawl without adding value.
@@ -81,7 +85,9 @@ class Crawler:
                     self.errors.pop(type_path, None)
                     return resp.json()
                 self.errors[type_path] = f"HTTP {resp.status_code}: {resp.text[:200]}"
-                return None
+                if resp.status_code != 400 or attempt:
+                    return None
+                time.sleep(1)  # parallel OPTIONS on quickTest families sometimes fail with a transient 400
             except (requests.RequestException, ValueError) as exc:
                 self.errors[type_path] = f"{type(exc).__name__}: {exc}"
                 log.warning("OPTIONS error (%d/2) %s: %s", attempt + 1, type_path, type(exc).__name__)

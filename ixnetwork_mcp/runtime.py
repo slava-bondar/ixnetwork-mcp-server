@@ -10,7 +10,7 @@ from __future__ import annotations
 import time
 from typing import Any
 
-from . import rest
+from . import capture, rest
 from .errors import GUARD_BLOCKED, VALIDATION, IxToolError
 from .refs import ConfigIndex
 
@@ -135,11 +135,14 @@ def unassign_ports(ixn: Any, vports: list[str]) -> dict[str, Any]:
 
 # ---------------------------------------------------------------------------- protocols
 
-def control_protocols(ixn: Any, action: str, scope: str | None, wait_s: float) -> dict[str, Any]:
+def control_protocols(ixn: Any, action: str, scope: str | None, wait_s: float, devices: str | None = None,
+                      schema: Any = None) -> dict[str, Any]:
     root = rest.root(ixn)
     target = None
     if scope:
-        target = ConfigIndex.build(ixn, props=["name"]).resolve(scope)
+        target = ConfigIndex.build(ixn, props=["name", "count"]).resolve(scope)
+    if devices is not None:
+        return _control_devices(ixn, action, target, devices, wait_s, schema)
     if action == "apply_changes":
         before = rest.get(ixn, "globals/topology?includes=applyOnTheFlyState").get("applyOnTheFlyState")
         if before != "allowed":
@@ -158,6 +161,70 @@ def control_protocols(ixn: Any, action: str, scope: str | None, wait_s: float) -
         op = {"start": "start", "stop": "stop", "restart_down": "restartdown"}[action]
         ixn._connection._execute(f"{target.href}/operations/{op}", {"arg1": [target.href]})
     return {"action": action, "scope": target.name if target else "all", **_wait_protocols(ixn, scope, action, wait_s)}
+
+
+DEVICE_OPS = {"start": "start", "stop": "stop", "restart_down": "restartDown"}
+DEVICE_TARGET_STATE = {"start": {"up"}, "restart_down": {"up"}, "stop": {"notStarted"}}
+
+
+def _control_devices(ixn: Any, action: str, target: Any, devices: str, wait_s: float, schema: Any) -> dict[str, Any]:
+    """start / stop / restart_down for some device indices of one device group or protocol object,
+    via the operations' sessionIndices overload."""
+    from .refs import parse_device_ranges
+
+    if action not in DEVICE_OPS:
+        raise IxToolError(VALIDATION, f"devices cannot be combined with action '{action}'")
+    if target is None:
+        raise IxToolError(VALIDATION, "devices needs a scope: one device group or protocol object")
+    op = DEVICE_OPS[action]
+    if schema is not None:
+        from .compiler import resolve_operation
+
+        _, overloads = resolve_operation(schema, target.type_path, op)
+        if not any(a.get("name") == "sessionIndices" for o in overloads for a in o.get("args") or []):
+            raise IxToolError(VALIDATION, f"{target.type} cannot {action.replace('_', ' ')} single devices",
+                              hint="Scope a device group (start/stop) or a protocol object such as an "
+                                   "ethernet, ipv4 or BGP peer (start/stop/restart_down).")
+    indices = parse_device_ranges(devices, target.props.get("count"))
+    ixn._connection._execute(f"{target.href}/operations/{op}", {"arg1": [target.href], "sessionIndices": indices})
+    want = DEVICE_TARGET_STATE[action]
+    deadline = time.monotonic() + max(0.0, wait_s)
+    while True:
+        states = _device_states(ixn, target.href, indices)
+        settled = all(v in want for v in states.values())
+        if settled or time.monotonic() >= deadline:
+            break
+        time.sleep(POLL_S)
+    from .tools.status import ranges
+
+    by_state: dict[str, list[int]] = {}
+    for i, v in states.items():
+        by_state.setdefault(v, []).append(i)
+    return {"action": action, "scope": target.name, "devices": ranges(indices), "settled": settled,
+            "device_states": {k: ranges(v) for k, v in by_state.items()}}
+
+
+def _device_states(ixn: Any, href: str, indices: list[int]) -> dict[int, str]:
+    """Per-device session state of a protocol object, or of a device group (its stack objects
+    that have one session per device: up / notStarted / down, or 'mixed')."""
+    from .tools.discovery import STACK_REGEX
+
+    node = rest.select(ixn, href, properties=["count", "sessionStatus"],
+                       children=[rest.child(STACK_REGEX, ["count", "sessionStatus"])])[0]
+    lists: list[list[Any]] = [node["sessionStatus"]] if node.get("sessionStatus") else []
+    if not lists:
+        def walk(n: dict[str, Any]) -> None:
+            for kid in rest.child_nodes(n):
+                ss = kid.get("sessionStatus")
+                if ss and len(ss) == node.get("count"):
+                    lists.append(ss)
+                walk(kid)
+        walk(node)
+    out: dict[int, str] = {}
+    for i in indices:
+        seen = {str(lst[i - 1]) for lst in lists if i - 1 < len(lst)}
+        out[i] = seen.pop() if len(seen) == 1 else ("mixed" if seen else "unknown")
+    return out
 
 
 def _wait_protocols(ixn: Any, scope: str | None, action: str, wait_s: float) -> dict[str, Any]:
@@ -235,6 +302,7 @@ def _control_traffic(ixn: Any, action: str, items: list[str] | None, wait_s: flo
     elif action == "apply":
         if before in TRAFFIC_RUNNING:
             raise IxToolError(VALIDATION, "traffic is running; stop it before applying")
+        stopped_captures = capture.running_data_captures(ixn)
         ixn._connection._execute(f"{traffic}/operations/apply", {"arg1": traffic})
     elif action == "start":
         if before == "unapplied" or before == "error":
@@ -265,6 +333,9 @@ def _control_traffic(ixn: Any, action: str, items: list[str] | None, wait_s: flo
         "action": action, "traffic_state_before": before, "traffic_state": state,
         "items": [{"name": r["name"], "state": r.get("state"), **({"errors": r["errors"]} if r.get("errors") else {})}
                   for r in rows]}
+    if action == "apply" and stopped_captures:
+        out["warnings"] = [f"Apply stopped the data capture on {stopped_captures}; start it again with "
+                           "control_capture('start') before starting traffic"]
     if action in ("apply", "start") and any(r.get("state") == "unapplied" for r in rows):
         out["note"] = ("items still 'unapplied' have no packets yet, usually because destination MACs are not "
                        "resolved: start protocols (control_protocols), then control_traffic('generate') and apply")

@@ -1129,7 +1129,11 @@
     "valueList",
     "customDistributed"
    ],
-   "format": "bool"
+   "format": "bool",
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   }
   },
   "capabilityIpV6Mpls": {
    "availablePatterns": [
@@ -1594,7 +1598,11 @@
     "valueList",
     "customDistributed"
    ],
-   "format": "bool"
+   "format": "bool",
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   }
   },
   "enableBgpLsCommunity": {
    "availablePatterns": [
@@ -2032,7 +2040,18 @@
     "valueList",
     "customDistributed"
    ],
-   "format": "decimal"
+   "format": "decimal",
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "90"
+   }
   },
   "ipv4MplsAddPathMode": {
    "availablePatterns": [
@@ -21914,6 +21933,10349 @@
     "step": "0.0.0.1"
    },
    "format": "ipv4"
+  }
+ },
+ "topology/deviceGroup/ethernet/ipv4/bgpIpv4Peer/bgpIPv4EvpnVXLAN": {
+  "active": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "adRouteLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "advertiseL3vniSeparately": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "aggregatorAs": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "aggregatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "asSetMode": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "includelocalasasasseq"
+   },
+   "enums": [
+    "dontincludelocalas",
+    "includelocalasasasseq",
+    "includelocalasasasset",
+    "includelocalasasasseqconfederation",
+    "includelocalasasassetconfederation",
+    "prependlocalastofirstsegment"
+   ],
+   "format": "enum"
+  },
+  "autoConfigOriginatingRouterIp": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "autoConfigPMSITunnelId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "autoConfigureRdIpAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "bMacFirstLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "bMacSecondLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "enableAggregatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableAsPathSegments": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableAtomicAggregate": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableBMacSecondLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableCluster": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableExtendedCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableL3TargetOnlyForRouteType5": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableL3vniTargetList": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "bool"
+  },
+  "enableLocalPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableMultiExitDiscriminator": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableNextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableOrigin": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableOriginatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "esiType": {
+   "availablePatterns": [
+    "singleValue",
+    "string",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "Type 0 (Operator)"
+   },
+   "format": "string"
+  },
+  "igmpProxySupport": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "includeMcastFlagsExtComm": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "includePmsiTunnelAttribute": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "ipv4NextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "ipv6NextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "::"
+   },
+   "format": "ipv6"
+  },
+  "localPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "mldProxySupport": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "multiExitDiscriminator": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "multicastTunnelType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "tunneltypeingressreplication"
+   },
+   "enums": [
+    "tunneltypersvpp2mp",
+    "tunneltypemldpp2mp",
+    "tunneltypeingressreplication"
+   ],
+   "format": "enum"
+  },
+  "multicastTunnelTypeVxlan": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "tunneltypeingressreplication"
+   },
+   "enums": [
+    "tunneltypeingressreplication",
+    "pimsm",
+    "pimssm"
+   ],
+   "format": "enum"
+  },
+  "oismSupport": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "origin": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "igp"
+   },
+   "enums": [
+    "igp",
+    "egp",
+    "incomplete"
+   ],
+   "format": "enum"
+  },
+  "originatingRouterIpv4": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "originatingRouterIpv6": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "::"
+   },
+   "format": "ipv6"
+  },
+  "originatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "overridePeerAsSetMode": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "pmsiTunnelIDv4": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1.1.1.1"
+   },
+   "format": "ipv4"
+  },
+  "pmsiTunnelIDv6": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1::1"
+   },
+   "format": "ipv6"
+  },
+  "rdASNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "rdEvi": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "rdIpAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "rdType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "enums": [
+    "as",
+    "ip",
+    "as4"
+   ],
+   "format": "enum"
+  },
+  "sbdSupport": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "setNextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "sameaslocalip"
+   },
+   "enums": [
+    "manually",
+    "sameaslocalip"
+   ],
+   "format": "enum"
+  },
+  "setNextHopIpType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "ipv4"
+   },
+   "enums": [
+    "ipv4",
+    "ipv6"
+   ],
+   "format": "enum"
+  },
+  "upstreamDownstreamAssignedMplsLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "useIpv4MappedIpv6Address": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "useUpstreamDownstreamAssignedMplsLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  }
+ },
+ "topology/deviceGroup/ethernet/ipv4/bgpIpv4Peer/bgpIPv4EvpnVXLAN/bgpExportRouteTargetList": {
+  "targetAs4Number": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "100"
+   },
+   "format": "decimal"
+  },
+  "targetAsNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "targetAssignedNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "targetIpAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1.1.1.1"
+   },
+   "format": "ipv4"
+  },
+  "targetType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "enums": [
+    "as",
+    "ip",
+    "as4"
+   ],
+   "format": "enum"
+  }
+ },
+ "topology/deviceGroup/ethernet/ipv4/bgpIpv4Peer/bgpIPv4EvpnVXLAN/bgpL3VNIExportRouteTargetList": {
+  "targetAs4Number": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "100"
+   },
+   "format": "decimal"
+  },
+  "targetAsNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "targetAssignedNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "targetIpAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1.1.1.1"
+   },
+   "format": "ipv4"
+  },
+  "targetType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "enums": [
+    "as",
+    "ip",
+    "as4"
+   ],
+   "format": "enum"
+  }
+ },
+ "topology/deviceGroup/ethernet/ipv4/bgpIpv4Peer/bgpIPv4EvpnVXLAN/broadcastDomainV4": {
+  "active": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "adRouteLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "asNumber2Bytes": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "1"
+     }
+    ],
+    "pattern": "counter",
+    "start": "1",
+    "step": "1"
+   },
+   "format": "decimal"
+  },
+  "asNumber4Bytes": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "1"
+     }
+    ],
+    "pattern": "counter",
+    "start": "1",
+    "step": "1"
+   },
+   "format": "decimal"
+  },
+  "bVlanId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1"
+   },
+   "format": "decimal"
+  },
+  "bVlanPriority": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "bVlanTpid": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "bvlantpid8100"
+   },
+   "enums": [
+    "bvlantpid8100",
+    "bvlantpid88a8",
+    "bvlantpid9100",
+    "bvlantpid9200",
+    "bvlantpid9300"
+   ],
+   "format": "enum"
+  },
+  "enableVlanAwareService": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "ethernetTagId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "exportEviRTAssignedNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "0"
+     }
+    ],
+    "pattern": "counter",
+    "start": "1",
+    "step": "1"
+   },
+   "format": "decimal"
+  },
+  "exportRTIpv4Address": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "0.1.0.0"
+     }
+    ],
+    "pattern": "counter",
+    "start": "1.1.1.1",
+    "step": "0.0.0.1"
+   },
+   "format": "ipv4"
+  },
+  "exportRTSubType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "transitiveas2octet"
+   },
+   "enums": [
+    "transitiveas2octet",
+    "trasitiveipv4",
+    "transitiveas4octet"
+   ],
+   "format": "enum"
+  },
+  "exportRTType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "evpn"
+   },
+   "enums": [
+    "evpn"
+   ],
+   "format": "enum"
+  },
+  "exportRTValueSameAsExportRT": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "groupAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "225.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "importEviRTAssignedNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "0"
+     }
+    ],
+    "pattern": "counter",
+    "start": "1",
+    "step": "1"
+   },
+   "format": "decimal"
+  },
+  "importRTIpv4Address": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "0.1.0.0"
+     }
+    ],
+    "pattern": "counter",
+    "start": "1.1.1.1",
+    "step": "0.0.0.1"
+   },
+   "format": "ipv4"
+  },
+  "importRTSubType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "transitiveas2octet"
+   },
+   "enums": [
+    "transitiveas2octet",
+    "trasitiveipv4",
+    "transitiveas4octet"
+   ],
+   "format": "enum"
+  },
+  "importRTType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "evpn"
+   },
+   "enums": [
+    "evpn"
+   ],
+   "format": "enum"
+  },
+  "importRTValueSameAsExportEVIRT": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "rootAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1.1.1.1"
+   },
+   "format": "ipv4"
+  },
+  "rsvpP2mpId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "rsvpP2mpIdAsNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "rsvpTunnelId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "senderAddressPRootNodeAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "10.10.10.10"
+   },
+   "format": "ipv4"
+  }
+ },
+ "topology/deviceGroup/networkGroup/ipv4PrefixPools/connector": {},
+ "topology/deviceGroup/networkGroup/ipv4PrefixPools/evpnIPv4PrefixRange": {
+  "active": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "advSrv6SidInIgp": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "advertiseSRv6SID": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "aggregatorAs": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "aggregatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "argumentLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "asSetMode": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "includelocalasasasseq"
+   },
+   "enums": [
+    "dontincludelocalas",
+    "includelocalasasasseq",
+    "includelocalasasasset",
+    "includelocalasasasseqconfederation",
+    "includelocalasasassetconfederation",
+    "prependlocalastofirstsegment"
+   ],
+   "format": "enum"
+  },
+  "enableAggregatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableAsPathSegments": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableAtomicAggregate": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableCluster": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableExtendedCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableLocalPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableMultiExitDiscriminator": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableNextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableOrigin": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableOriginatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableTransposition": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "functionLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "incSrv6SidStructSsTlv": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "ipv4NextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "ipv6NextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "::"
+   },
+   "format": "ipv6"
+  },
+  "labelMode": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "fixed"
+   },
+   "enums": [
+    "fixed",
+    "increment"
+   ],
+   "format": "enum"
+  },
+  "labelStart": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "labelStep": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1"
+   },
+   "format": "decimal"
+  },
+  "locBlockLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "40"
+   },
+   "format": "decimal"
+  },
+  "locNodeLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "24"
+   },
+   "format": "decimal"
+  },
+  "localPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "multiExitDiscriminator": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "origin": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "igp"
+   },
+   "enums": [
+    "igp",
+    "egp",
+    "incomplete"
+   ],
+   "format": "enum"
+  },
+  "originatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "overridePeerAsSetMode": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "sendSRv6SIDOptionalInfo": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "setNextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "sameaslocalip"
+   },
+   "enums": [
+    "manually",
+    "sameaslocalip"
+   ],
+   "format": "enum"
+  },
+  "setNextHopIpType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "ipv4"
+   },
+   "enums": [
+    "ipv4",
+    "ipv6"
+   ],
+   "format": "enum"
+  },
+  "srv6EndpointBehavior": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "ffff"
+   },
+   "format": "hex"
+  },
+  "srv6SIDOptionalInformation": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "01"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "01"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00000100"
+   },
+   "format": "varLenHex"
+  },
+  "srv6SidFlags": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6SidLoc": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "a1::d100"
+   },
+   "format": "ipv6"
+  },
+  "srv6SidLocLen": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "64"
+   },
+   "format": "decimal"
+  },
+  "srv6SidLocMetric": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "10"
+   },
+   "format": "decimal"
+  },
+  "srv6SidReserved": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6SidReserved1": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6SidReserved2": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6SidStep": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "::0.0.0.1"
+   },
+   "format": "ipv6"
+  },
+  "transpositionLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "transpositionOffset": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  }
+ },
+ "topology/deviceGroup/networkGroup/ipv6PrefixPools/connector": {},
+ "topology/deviceGroup/networkGroup/ipv6PrefixPools/evpnIPv6PrefixRange": {
+  "active": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "advSrv6SidInIgp": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "advertiseSRv6SID": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "aggregatorAs": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "aggregatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "argumentLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "asSetMode": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "includelocalasasasseq"
+   },
+   "enums": [
+    "dontincludelocalas",
+    "includelocalasasasseq",
+    "includelocalasasasset",
+    "includelocalasasasseqconfederation",
+    "includelocalasasassetconfederation",
+    "prependlocalastofirstsegment"
+   ],
+   "format": "enum"
+  },
+  "enableAggregatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableAsPathSegments": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableAtomicAggregate": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableCluster": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableExtendedCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableLocalPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableMultiExitDiscriminator": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableNextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableOrigin": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableOriginatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableTransposition": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "functionLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "incSrv6SidStructSsTlv": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "ipv4NextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "ipv6NextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "::"
+   },
+   "format": "ipv6"
+  },
+  "labelMode": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "fixed"
+   },
+   "enums": [
+    "fixed",
+    "increment"
+   ],
+   "format": "enum"
+  },
+  "labelStart": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "labelStep": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1"
+   },
+   "format": "decimal"
+  },
+  "locBlockLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "40"
+   },
+   "format": "decimal"
+  },
+  "locNodeLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "24"
+   },
+   "format": "decimal"
+  },
+  "localPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "multiExitDiscriminator": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "origin": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "igp"
+   },
+   "enums": [
+    "igp",
+    "egp",
+    "incomplete"
+   ],
+   "format": "enum"
+  },
+  "originatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "overridePeerAsSetMode": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "sendSRv6SIDOptionalInfo": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "setNextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "sameaslocalip"
+   },
+   "enums": [
+    "manually",
+    "sameaslocalip"
+   ],
+   "format": "enum"
+  },
+  "setNextHopIpType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "ipv4"
+   },
+   "enums": [
+    "ipv4",
+    "ipv6"
+   ],
+   "format": "enum"
+  },
+  "srv6EndpointBehavior": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "ffff"
+   },
+   "format": "hex"
+  },
+  "srv6SIDOptionalInformation": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "01"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "01"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00000100"
+   },
+   "format": "varLenHex"
+  },
+  "srv6SidFlags": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6SidLoc": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "a1::d100"
+   },
+   "format": "ipv6"
+  },
+  "srv6SidLocLen": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "64"
+   },
+   "format": "decimal"
+  },
+  "srv6SidLocMetric": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "10"
+   },
+   "format": "decimal"
+  },
+  "srv6SidReserved": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6SidReserved1": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6SidReserved2": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6SidStep": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "::0.0.0.1"
+   },
+   "format": "ipv6"
+  },
+  "transpositionLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "transpositionOffset": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  }
+ },
+ "topology/deviceGroup/ethernet/ipv4/ldpConnectedInterface": {
+  "active": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "authentication": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "null"
+   },
+   "enums": [
+    "null",
+    "md5"
+   ],
+   "format": "enum"
+  },
+  "basicHelloInterval": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "basicHoldTime": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "15"
+   },
+   "format": "decimal"
+  },
+  "enableBfdRegistration": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "labelSpaceID": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "mD5Key": {
+   "availablePatterns": [
+    "singleValue",
+    "string",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": ""
+   },
+   "format": "string"
+  },
+  "operationMode": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "unsolicited"
+   },
+   "enums": [
+    "unsolicited",
+    "ondemand"
+   ],
+   "format": "enum"
+  }
+ },
+ "topology/deviceGroup/ldpBasicRouter": {
+  "active": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableBfdMplsLearnedLsp": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableFec128Advertisement": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableFec129Advertisement": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableGracefulRestart": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableIpv4Advertisement": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableIpv6Advertisement": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableLspPingLearnedLsp": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableP2MPCapability": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "ignoreStateAdvertisementControlCapability": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "includeSac": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "keepAliveHoldTime": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "180"
+   },
+   "format": "decimal"
+  },
+  "keepAliveInterval": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "reconnectTime": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "120000"
+   },
+   "format": "decimal"
+  },
+  "recoveryTime": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "120000"
+   },
+   "format": "decimal"
+  },
+  "sessionPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "ipv6"
+   },
+   "enums": [
+    "any",
+    "ipv4",
+    "ipv6"
+   ],
+   "format": "enum"
+  }
+ },
+ "topology/deviceGroup/networkGroup/deviceGroup/ipv4Loopback/bgpIpv4Peer/bgpEthernetSegmentV4": {
+  "AdvertiseAliasingBeforeAdPerEsRoute": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "AdvertiseInclusiveMulticastRoute": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "AliasingRouteGranularity": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "evi"
+   },
+   "enums": [
+    "tag",
+    "evi"
+   ],
+   "format": "enum"
+  },
+  "active": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "advertiseAliasingAutomatically": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "aggregatorAs": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "aggregatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "asSetMode": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "includelocalasasasseq"
+   },
+   "enums": [
+    "dontincludelocalas",
+    "includelocalasasasseq",
+    "includelocalasasasset",
+    "includelocalasasasseqconfederation",
+    "includelocalasasassetconfederation",
+    "prependlocalastofirstsegment"
+   ],
+   "format": "enum"
+  },
+  "autoConfigureEsImport": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "bMacPrefix": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "00:00:00:00:00:01"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "00:00:00:00:00:01"
+     },
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "00:00:00:00:00:01"
+     }
+    ],
+    "pattern": "counter",
+    "start": "00:03:01:00:00:01",
+    "step": "00:00:00:00:00:01"
+   },
+   "format": "mac"
+  },
+  "bMacPrefixLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "48"
+   },
+   "format": "decimal"
+  },
+  "dfElectionTimer": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "3"
+   },
+   "format": "decimal"
+  },
+  "eTreeLeafLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1100"
+   },
+   "format": "decimal"
+  },
+  "enableAggregatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableAsPathSegments": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableAtomicAggregate": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableCluster": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableETreeLeafIndication": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableExtendedCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableLocalPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableMultiExitDiscriminator": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableNextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableOrigin": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableOriginatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableSingleActive": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableStickyStaticFlag": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "esImport": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "00:00:00:00:00:01"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "00:00:00:00:00:01"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "00:00:00:00:00:01"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00:00:00:00:00:00"
+   },
+   "format": "mac"
+  },
+  "esiLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "esiType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "type0"
+   },
+   "enums": [
+    "type0",
+    "type1",
+    "type2",
+    "type3",
+    "type4",
+    "type5",
+    "type6"
+   ],
+   "format": "enum"
+  },
+  "esiValue": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "hex"
+  },
+  "includeMacMobilityExtendedCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "ipv4NextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "ipv6NextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "::"
+   },
+   "format": "ipv6"
+  },
+  "irbIPv4Address": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "10.0.1.1"
+   },
+   "format": "ipv4"
+  },
+  "irbInterfaceLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "localPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "multiExitDiscriminator": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "origin": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "igp"
+   },
+   "enums": [
+    "igp",
+    "egp",
+    "incomplete"
+   ],
+   "format": "enum"
+  },
+  "originatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "overridePeerAsSetMode": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "routerMacAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "00:00:00:00:00:01"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "00:00:00:00:00:01"
+     },
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "00:00:01:00:00:00"
+     }
+    ],
+    "pattern": "counter",
+    "start": "00:01:02:00:00:01",
+    "step": "00:00:00:00:00:01"
+   },
+   "format": "mac"
+  },
+  "setNextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "sameaslocalip"
+   },
+   "enums": [
+    "manually",
+    "sameaslocalip"
+   ],
+   "format": "enum"
+  },
+  "setNextHopIpType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "ipv4"
+   },
+   "enums": [
+    "ipv4",
+    "ipv6"
+   ],
+   "format": "enum"
+  },
+  "supportFastConvergence": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "supportMultihomedEsAutoDiscovery": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "useSameSequenceNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "vtepIpv4Address": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  }
+ },
+ "topology/deviceGroup/networkGroup/deviceGroup/ipv4Loopback/bgpIpv4Peer/bgpIPv4EvpnEvi": {
+  "active": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "adRouteLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "advertiseL3vniSeparately": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "aggregatorAs": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "aggregatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "asSetMode": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "includelocalasasasseq"
+   },
+   "enums": [
+    "dontincludelocalas",
+    "includelocalasasasseq",
+    "includelocalasasasset",
+    "includelocalasasasseqconfederation",
+    "includelocalasasassetconfederation",
+    "prependlocalastofirstsegment"
+   ],
+   "format": "enum"
+  },
+  "autoConfigOriginatingRouterIp": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "autoConfigPMSITunnelId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "autoConfigureRdIpAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "bMacFirstLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "bMacSecondLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "enableAggregatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableAsPathSegments": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableAtomicAggregate": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableBMacSecondLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableCluster": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableExtendedCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableL3TargetOnlyForRouteType5": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableL3vniTargetList": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableLocalPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableMultiExitDiscriminator": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableNextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableOrigin": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableOriginatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "esiType": {
+   "availablePatterns": [
+    "singleValue",
+    "string",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "Type 0 (Operator)"
+   },
+   "format": "string"
+  },
+  "igmpProxySupport": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "includeMcastFlagsExtComm": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "includePmsiTunnelAttribute": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "ipv4NextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "ipv6NextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "::"
+   },
+   "format": "ipv6"
+  },
+  "localPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "mldProxySupport": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "multiExitDiscriminator": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "multicastTunnelType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "tunneltypeingressreplication"
+   },
+   "enums": [
+    "tunneltypersvpp2mp",
+    "tunneltypemldpp2mp",
+    "tunneltypeingressreplication"
+   ],
+   "format": "enum"
+  },
+  "origin": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "igp"
+   },
+   "enums": [
+    "igp",
+    "egp",
+    "incomplete"
+   ],
+   "format": "enum"
+  },
+  "originatingRouterIpv4": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "originatingRouterIpv6": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "::"
+   },
+   "format": "ipv6"
+  },
+  "originatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "overridePeerAsSetMode": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "pmsiTunnelIDv4": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1.1.1.1"
+   },
+   "format": "ipv4"
+  },
+  "pmsiTunnelIDv6": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1::1"
+   },
+   "format": "ipv6"
+  },
+  "rdASNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "100"
+   },
+   "format": "decimal"
+  },
+  "rdEvi": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "rdIpAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "rdType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "enums": [
+    "as",
+    "ip",
+    "as4"
+   ],
+   "format": "enum"
+  },
+  "setNextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "sameaslocalip"
+   },
+   "enums": [
+    "manually",
+    "sameaslocalip"
+   ],
+   "format": "enum"
+  },
+  "setNextHopIpType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "ipv4"
+   },
+   "enums": [
+    "ipv4",
+    "ipv6"
+   ],
+   "format": "enum"
+  },
+  "upstreamDownstreamAssignedMplsLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "useIpv4MappedIpv6Address": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "useUpstreamDownstreamAssignedMplsLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  }
+ },
+ "topology/deviceGroup/networkGroup/deviceGroup/ipv4Loopback/bgpIpv4Peer/bgpIPv4EvpnEvi/bgpExportRouteTargetList": {
+  "targetAs4Number": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "100"
+   },
+   "format": "decimal"
+  },
+  "targetAsNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "targetAssignedNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "targetIpAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1.1.1.1"
+   },
+   "format": "ipv4"
+  },
+  "targetType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "enums": [
+    "as",
+    "ip",
+    "as4"
+   ],
+   "format": "enum"
+  }
+ },
+ "topology/deviceGroup/networkGroup/deviceGroup/ipv4Loopback/bgpIpv4Peer/bgpIPv4EvpnEvi/bgpL3VNIExportRouteTargetList": {
+  "targetAs4Number": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "100"
+   },
+   "format": "decimal"
+  },
+  "targetAsNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "100"
+   },
+   "format": "decimal"
+  },
+  "targetAssignedNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "0"
+     }
+    ],
+    "pattern": "counter",
+    "start": "1",
+    "step": "1"
+   },
+   "format": "decimal"
+  },
+  "targetIpAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1.1.1.1"
+   },
+   "format": "ipv4"
+  },
+  "targetType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "as"
+   },
+   "enums": [
+    "as",
+    "ip",
+    "as4"
+   ],
+   "format": "enum"
+  }
+ },
+ "topology/deviceGroup/networkGroup/deviceGroup/ipv4Loopback/bgpIpv4Peer/bgpIPv4EvpnEvi/broadcastDomainV4": {
+  "active": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "adRouteLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "asNumber2Bytes": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "100"
+   },
+   "format": "decimal"
+  },
+  "asNumber4Bytes": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "100"
+   },
+   "format": "decimal"
+  },
+  "bVlanId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1"
+   },
+   "format": "decimal"
+  },
+  "bVlanPriority": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "bVlanTpid": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "bvlantpid8100"
+   },
+   "enums": [
+    "bvlantpid8100",
+    "bvlantpid88a8",
+    "bvlantpid9100",
+    "bvlantpid9200",
+    "bvlantpid9300"
+   ],
+   "format": "enum"
+  },
+  "enableVlanAwareService": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "ethernetTagId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "exportEviRTAssignedNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "0"
+     }
+    ],
+    "pattern": "counter",
+    "start": "1",
+    "step": "1"
+   },
+   "format": "decimal"
+  },
+  "exportRTIpv4Address": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "0.1.0.0"
+     }
+    ],
+    "pattern": "counter",
+    "start": "1.1.1.2",
+    "step": "0.0.0.1"
+   },
+   "format": "ipv4"
+  },
+  "exportRTSubType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "transitiveas2octet"
+   },
+   "enums": [
+    "transitiveas2octet",
+    "trasitiveipv4",
+    "transitiveas4octet"
+   ],
+   "format": "enum"
+  },
+  "exportRTType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "evpn"
+   },
+   "enums": [
+    "evpn"
+   ],
+   "format": "enum"
+  },
+  "exportRTValueSameAsExportRT": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "groupAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "225.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "importEviRTAssignedNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "0"
+     }
+    ],
+    "pattern": "counter",
+    "start": "1",
+    "step": "1"
+   },
+   "format": "decimal"
+  },
+  "importRTIpv4Address": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "0.1.0.0"
+     }
+    ],
+    "pattern": "counter",
+    "start": "1.1.1.2",
+    "step": "0.0.0.1"
+   },
+   "format": "ipv4"
+  },
+  "importRTSubType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "transitiveas2octet"
+   },
+   "enums": [
+    "transitiveas2octet",
+    "trasitiveipv4",
+    "transitiveas4octet"
+   ],
+   "format": "enum"
+  },
+  "importRTType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "evpn"
+   },
+   "enums": [
+    "evpn"
+   ],
+   "format": "enum"
+  },
+  "importRTValueSameAsExportEVIRT": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "rootAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1.1.1.1"
+   },
+   "format": "ipv4"
+  },
+  "rsvpP2mpId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "rsvpP2mpIdAsNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "rsvpTunnelId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "senderAddressPRootNodeAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "10.10.10.10"
+   },
+   "format": "ipv4"
+  }
+ },
+ "topology/deviceGroup/networkGroup/deviceGroup/ipv4Loopback/connector": {},
+ "topology/deviceGroup/networkGroup/deviceGroup/networkGroup": {
+  "enabled": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  }
+ },
+ "topology/deviceGroup/networkGroup/deviceGroup/networkGroup/macPools": {
+  "enableVlans": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "mac": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "mac"
+  },
+  "numberOfAddressesAsy": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "prefixLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "48"
+   },
+   "format": "decimal"
+  }
+ },
+ "topology/deviceGroup/networkGroup/deviceGroup/networkGroup/macPools/cMacProperties": {
+  "active": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "activeTs": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "advSrv6L2SidInIgp": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "advSrv6L3SidInIgp": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "advertiseIpv4Address": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "bool"
+  },
+  "advertiseIpv6Address": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "advertiseSRv6L2SID": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "advertiseSRv6L3SID": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "aggregatorAs": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "aggregatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "asSetMode": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "includelocalasasasseq"
+   },
+   "enums": [
+    "dontincludelocalas",
+    "includelocalasasasseq",
+    "includelocalasasasset",
+    "includelocalasasasseqconfederation",
+    "includelocalasasassetconfederation",
+    "prependlocalastofirstsegment"
+   ],
+   "format": "enum"
+  },
+  "eTreeLeafLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "enableAggregatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableAsPathSegments": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableAtomicAggregate": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableCluster": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableETreeExtComm": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableETreeLeafIndication": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableExtendedCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableLocalPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableMultiExitDiscriminator": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableNextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableOrigin": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableOriginatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableSecondLabel": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enableStickyStaticFlag": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableUserDefinedSequenceNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "eviId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "10001"
+   },
+   "format": "decimal"
+  },
+  "firstLabelStart": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "incSrv6L2SidStructSsTlv": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "incSrv6L3SidStructSsTlv": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "includeDefaultGatewayExtendedCommunity": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "ipv4AddressPrefixLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "24"
+   },
+   "format": "decimal"
+  },
+  "ipv4NextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "ipv6AddressPrefixLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "64"
+   },
+   "format": "decimal"
+  },
+  "ipv6NextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "::"
+   },
+   "format": "ipv6"
+  },
+  "l2SidArgumentLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "l2SidEnableTransposition": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "l2SidFunctionLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "l2SidLocBlockLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "40"
+   },
+   "format": "decimal"
+  },
+  "l2SidLocNodeLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "24"
+   },
+   "format": "decimal"
+  },
+  "l2SidTranpositionLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "l2SidTranpositionOffset": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "l3SidArgumentLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "l3SidEnableTransposition": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "l3SidFunctionLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "l3SidLocBlockLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "40"
+   },
+   "format": "decimal"
+  },
+  "l3SidLocNodeLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "24"
+   },
+   "format": "decimal"
+  },
+  "l3SidTranpositionLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "l3SidTranpositionOffset": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "labelMode": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "fixed"
+   },
+   "enums": [
+    "fixed",
+    "increment"
+   ],
+   "format": "enum"
+  },
+  "labelStep": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1"
+   },
+   "format": "decimal"
+  },
+  "localPreference": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "multiExitDiscriminator": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "origin": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "igp"
+   },
+   "enums": [
+    "igp",
+    "egp",
+    "incomplete"
+   ],
+   "format": "enum"
+  },
+  "originatorId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0.0.0.0"
+   },
+   "format": "ipv4"
+  },
+  "overridePeerAsSetMode": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "peerAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "string",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "198.18.72.1"
+   },
+   "format": "string"
+  },
+  "secondLabelStart": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "16"
+   },
+   "format": "decimal"
+  },
+  "sendSRv6L3SIDOptionalInfo": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "sendSRv6SIDOptionalInfo": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "sequenceNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "direction": "increment",
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": true,
+      "step": "0"
+     }
+    ],
+    "pattern": "counter",
+    "start": "1",
+    "step": "0"
+   },
+   "format": "decimal"
+  },
+  "setNextHop": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "sameaslocalip"
+   },
+   "enums": [
+    "manually",
+    "sameaslocalip"
+   ],
+   "format": "enum"
+  },
+  "setNextHopIpType": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "ipv4"
+   },
+   "enums": [
+    "ipv4",
+    "ipv6"
+   ],
+   "format": "enum"
+  },
+  "srv6EndpointBehavior": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "ffff"
+   },
+   "format": "hex"
+  },
+  "srv6L2SidFlags": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6L2SidLoc": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "a1::d2aa"
+   },
+   "format": "ipv6"
+  },
+  "srv6L2SidLocLen": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "64"
+   },
+   "format": "decimal"
+  },
+  "srv6L2SidLocMetric": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "10"
+   },
+   "format": "decimal"
+  },
+  "srv6L2SidReserved": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6L2SidStep": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "::0.0.0.1"
+   },
+   "format": "ipv6"
+  },
+  "srv6L3EndpointBehavior": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "ffff"
+   },
+   "format": "hex"
+  },
+  "srv6L3SIDOptionalInformation": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "01"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "01"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "01"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "01"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00000100"
+   },
+   "format": "varLenHex"
+  },
+  "srv6L3SidFlags": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6L3SidLoc": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "a1::d3aa"
+   },
+   "format": "ipv6"
+  },
+  "srv6L3SidLocLen": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "64"
+   },
+   "format": "decimal"
+  },
+  "srv6L3SidLocMetric": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "10"
+   },
+   "format": "decimal"
+  },
+  "srv6L3SidReserved": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6L3SidReserved1": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6L3SidReserved2": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6L3SidStep": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "::0.0.0.1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "::0.0.0.1"
+   },
+   "format": "ipv6"
+  },
+  "srv6SIDOptionalInformation": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "01"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "01"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "01"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "01"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00000100"
+   },
+   "format": "varLenHex"
+  },
+  "srv6SidReserved1": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "srv6SidReserved2": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "00"
+   },
+   "format": "hex"
+  },
+  "useSameSequenceNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  }
+ },
+ "topology/deviceGroup/networkGroup/deviceGroup/networkGroup/macPools/connector": {},
+ "topology/deviceGroup/networkGroup/deviceGroup/networkGroup/macPools/ipv4PrefixPools": {
+  "networkAddress": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "ipv4"
+  },
+  "numberOfAddressesAsy": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  },
+  "prefixAddrStep": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1"
+   },
+   "format": "decimal"
+  },
+  "prefixLength": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
+  }
+ },
+ "topology/deviceGroup/networkGroup/deviceGroup/networkGroup/macPools/vlan": {
+  "priority": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "0"
+   },
+   "format": "decimal"
+  },
+  "tpid": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "ethertype8100"
+   },
+   "enums": [
+    "ethertype8100",
+    "ethertype88a8",
+    "ethertype9100",
+    "ethertype9200",
+    "ethertype9300"
+   ],
+   "format": "enum"
+  },
+  "vlanId": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "nest": [
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Network Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Device Group",
+      "enabled": false,
+      "step": "1"
+     },
+     {
+      "description": "Port Step",
+      "enabled": false,
+      "step": "1"
+     }
+    ],
+    "pattern": "singleValue",
+    "value": "1"
+   },
+   "format": "decimal"
+  }
+ },
+ "topology/deviceGroup/networkGroup/ipv4PrefixPools/ldpFECProperty": {
+  "active": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   },
+   "format": "bool"
+  },
+  "enablePacking": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "enableReplyingLspPing": {
+   "availablePatterns": [
+    "singleValue",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "customDistributed"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "false"
+   },
+   "format": "bool"
+  },
+  "labelIncrementMode": {
+   "availablePatterns": [
+    "singleValue",
+    "valueList"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "increment"
+   },
+   "enums": [
+    "same",
+    "increment"
+   ],
+   "format": "enum"
+  },
+  "labelValue": {
+   "availablePatterns": [
+    "singleValue",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed"
+   ],
+   "format": "decimal"
   }
  }
 }

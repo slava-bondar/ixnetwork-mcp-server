@@ -162,3 +162,27 @@ def _flatten(obj: dict[str, Any], parent: str | None, out: list[Node], skip_root
         me = xpath
     for kid in rest.child_nodes(obj):
         _flatten(kid, me, out, parent_auto=auto)
+
+
+def parse_device_ranges(text: str, count: int | None = None) -> list[int]:
+    """'1-3,7' -> [1, 2, 3, 7] (1-based device indices within one protocol object). `count` is the
+    object's device count; indices beyond it are an error."""
+    from .errors import VALIDATION
+
+    out: set[int] = set()
+    for part in str(text).replace(";", ",").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        m = re.fullmatch(r"(\d+)\s*(?:-\s*(\d+))?", part)
+        if not m:
+            raise IxToolError(VALIDATION, f"devices: '{part}' is not an index or a range like '1-3'")
+        lo, hi = int(m.group(1)), int(m.group(2) or m.group(1))
+        if lo < 1 or hi < lo:
+            raise IxToolError(VALIDATION, f"devices: '{part}' is not a valid 1-based range")
+        out.update(range(lo, hi + 1))
+    if not out:
+        raise IxToolError(VALIDATION, "devices: no indices given")
+    if count is not None and max(out) > count:
+        raise IxToolError(VALIDATION, f"devices: index {max(out)} is beyond the object's {count} device(s)")
+    return sorted(out)

@@ -39,8 +39,14 @@ Running it:
   Never take ports owned by another session (other projects share the chassis) unless the user
   explicitly says so.
 - Protocols: `control_protocols('start', scope=..., confirm=true)` after the user agreed (packets go
-  to the device under test), then `get_protocol_status(only_problems=true)`. After changing a
-  running configuration: `control_protocols('apply_changes', confirm=true)`.
+  to the device under test), then `get_protocol_status(only_problems=true)`. To act on some
+  devices only, add `devices="1-3,7"` with a device-group scope (start/stop) or a protocol-object
+  scope (start/stop/restart_down); the layers below start for the same devices. A protocol stays
+  `notStarted` until its IP layer resolves the gateway, which takes 15 s or more when the gateway
+  does not answer, so allow `wait_s` for that. Check what the
+  protocols learned from the DUT with `get_learned_info(ref)` (BGP routes, OSPF LSAs, IS-IS
+  database; `filters`/`save_csv` for large tables). After changing a running configuration:
+  `control_protocols('apply_changes', confirm=true)`.
 
 Traffic (read `get_guide('traffic')`):
 - `configure_traffic_items` with endpoints referenced by object name, then after protocols are up
