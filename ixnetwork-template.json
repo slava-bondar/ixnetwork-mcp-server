@@ -13,7 +13,9 @@
       "allow_clear_config": false,
       "allow_traffic_start": true,
       "allow_port_takeover": false,
-      "allow_raw_import": false
+      "allow_raw_import": false,
+      "confirm_in_client": true,
+      "require_human_confirmation": false
     },
     "config_dir": "~/.ixnetwork-mcp/configs/lab"
   }

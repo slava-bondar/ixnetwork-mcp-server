@@ -56,8 +56,9 @@ options.
   configuration, starting traffic, taking over chassis ports owned by other sessions, raw imports).
 - Destructive actions are confirmed by you: if your MCP client supports elicitation, the server
   asks you directly in the client; otherwise the agent must pass `confirm=true` after asking you in
-  chat. `"require_human_confirmation": true` in `guards` refuses the agent's `confirm=true`, so such
-  actions only run from clients that can ask you.
+  chat. `"confirm_in_client": false` in `guards` turns the client's dialog off for that target, so
+  the agent's `confirm=true` is enough again. `"require_human_confirmation": true` refuses the
+  agent's `confirm=true`, so such actions only run from clients that can ask you.
 - Saved configurations go to `~/.ixnetwork-mcp/configs/<target>/` (override with `config_dir`).
 
 ## Register with an MCP client

@@ -37,7 +37,7 @@ def can_elicit(ctx: Context | None) -> bool:
 async def confirm_action(ctx: Context | None, ts: Any, confirm: bool, action: str, *, write: bool = True) -> None:
     """Confirmation for a destructive action on target `ts`.
     - The client supports elicitation: the server asks the user directly (confirm=true is neither
-      needed nor sufficient).
+      needed nor sufficient), unless the target's guards.confirm_in_client is false.
     - Otherwise confirm=true (the agent asked in chat), unless the target's
       guards.require_human_confirmation demands a confirmation by the user in the client.
     A read_only target is refused before anyone is asked."""
@@ -47,7 +47,7 @@ async def confirm_action(ctx: Context | None, ts: Any, confirm: bool, action: st
     if write and guards.read_only:
         raise IxToolError(GUARD_BLOCKED, f"target '{ts.target.name}' is read_only",
                           hint="Set guards.read_only=false in the inventory to allow changes.")
-    if can_elicit(ctx):
+    if guards.confirm_in_client and can_elicit(ctx):
         result = await ctx.elicit(  # type: ignore[union-attr]
             message=f"IxNetwork '{ts.target.name}' ({ts.target.ip}): {action}. Proceed?", schema=_Confirmation)
         if result.action == "accept" and getattr(result, "data", None) is not None and result.data.confirm:

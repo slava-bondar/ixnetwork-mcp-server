@@ -14,7 +14,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 DEFAULT_HOME = Path("~/.ixnetwork-mcp")
 DEFAULT_INVENTORY = DEFAULT_HOME / "ixnetwork.json"
@@ -42,9 +42,18 @@ class Guards(BaseModel):
     allow_traffic_start: bool = True
     allow_port_takeover: bool = False
     allow_raw_import: bool = False
+    # clients with elicitation ask the user to confirm destructive actions; false skips that
+    # dialog, so the agent's confirm=true (after asking in chat) is enough again
+    confirm_in_client: bool = True
     # destructive actions only after the user confirmed in the MCP client (elicitation);
     # an agent's confirm=true is not enough, so clients without elicitation cannot run them
     require_human_confirmation: bool = False
+
+    @model_validator(mode="after")
+    def _consistent(self) -> Guards:
+        if self.require_human_confirmation and not self.confirm_in_client:
+            raise ValueError("require_human_confirmation needs confirm_in_client (the confirmation happens in the client)")
+        return self
 
 
 class Target(BaseModel):
