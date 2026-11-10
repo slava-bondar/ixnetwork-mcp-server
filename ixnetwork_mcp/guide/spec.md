@@ -47,7 +47,8 @@ Rules:
 - A BGP peer has at most **one EVPN instance**, `evpn_vxlan` or `evpn_mpls`. Its `count` gives several EVIs per peer.
 - `ipv4.ldp` also creates the device group's LDP router, which IxNetwork links to the IPv4 stack. A pool's `ldp` block needs LDP in its parent device group.
 - Every object also takes `attributes: {restName: value}` for settings without a friendly key. `describe_node_type` lists them.
-- `extend[].add` keys by parent type:
+- Every object also takes `children: [...]` for object types without a friendly key: any protocol or sub-object IxNetwork has (see "Any other object type" below).
+- `extend[].add` keys by parent type (`children` works under every type, also the ones not listed):
 
 | parent type | keys |
 |---|---|
@@ -59,6 +60,25 @@ Rules:
 | ipv6 | bgp_peers, ospf, mld_host, mld_querier, dhcp_server |
 | ipv4Loopback / ipv6Loopback | bgp_peers, ospf |
 | bgpIpv4Peer | evpn_vxlan, evpn_mpls (also set the peer's `evpn` capability with `set_attributes`; for `evpn_mpls` or a `count` above 1 also its ethernetSegmentsCountV4 to 1) |
+
+## Any other object type: `children`
+
+Protocols and sub-objects without friendly keys (BFD, PIM, RSVP-TE, VXLAN, L3VPN, PPPoE …) are built in the same validated step. Find the type with `search_node_types`, its place, attributes and child types with `describe_node_type`, then list it under its parent:
+
+```json
+"ipv4": {"address": "198.51.100.2", "gateway": "198.51.100.1", "children": [
+  {"type": "bfdv4Interface", "name": "Site-A BFD", "attributes": {"txInterval": 300, "minRxInterval": 300}},
+  {"type": "pimV4Interface", "name": "Site-A PIM", "attributes": {"helloInterval": 30},
+   "children": [{"type": "pimV4JoinPruneList", "auto": true, "attributes": {"groupV4Address": "225.0.0.1"}}]}
+]}
+```
+
+- `type`: the REST type name. `name`: optional, and how you refer to the object later.
+- `attributes`: REST names. Per-device values take the Value forms; plain ones take plain values.
+- `children`: nested the same way, to any depth.
+- `auto`: set it to true for an object IxNetwork creates by itself (`describe_node_type` shows `creatable: false`); only its values are then set. `index` picks one entry of such a list; without it they are taken in order (1, 2, …).
+- Placement, creatability and attribute names are checked before anything is written. Value formats and enums are checked there only for the types this server has captured; for the others IxNetwork checks them, and a rejected build is rolled back like any other.
+- To add to an existing object: `"extend": [{"parent": "<name or xpath>", "add": {"children": [...]}}]`.
 
 ## Field reference (friendly key → IxNetwork attribute)
 
@@ -161,6 +181,9 @@ Rules:
 - `origin` (BGP: igp | egp | incomplete; OSPF/IS-IS: routeOrigin)
 - `local_pref` (enableLocalPreference + localPreference; BGP)
 - `med` (enableMultiExitDiscriminator + multiExitDiscriminator; BGP)
+- `communities` (BGP; enableCommunity + noOfCommunities + bgpCommunitiesList): a list of `"65001:100"`, well-known names (`"no-export"`, `"no-advertise"`, `"no-export-subconfed"`, `"llgr-stale"`, `"no-llgr"`), or objects with `type`, `as_number` (asNumber), `number` (lastTwoOctets) that take patterns, e.g. `{"as_number": 65001, "number": {"start": 100, "step": 1}}`
+- `as_path` (BGP; enableAsPathSegments + one AS_SEQUENCE in bgpAsPathSegmentList / bgpAsNumberList): the AS numbers in order, e.g. `[65010, 65020]`. AS sets, confederations or several segments go through `children` on the route property.
+- Example: `"bgp": {"local_pref": 200, "communities": ["65001:100", "no-export"], "as_path": [65010, 65020]}`
 - `metric` (OSPF/IS-IS)
 - `prefix_sid_index` (IS-IS SR: isisL3PrefixesSrSid configureSIDIndexLabel=true + sidIndexLabel, e.g. `{"start": 1000, "step": 1}`; the IS-IS router needs `sr`)
 

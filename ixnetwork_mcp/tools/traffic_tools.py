@@ -82,6 +82,8 @@ def configure(ixn: Any, cfgs: list[TrafficItemConfig], mode: str, dry_run: bool)
             problems.append(f"{cfg.name}: a traffic item with this name exists (use mode='update' or 'upsert')")
         elif mode == "update" and not exists:
             problems.append(f"{cfg.name}: no traffic item with this name (use mode='create' or 'upsert')")
+        elif not exists and not cfg.endpoint_sets:
+            problems.append(f"{cfg.name}: a new traffic item needs endpoint_sets")
         try:
             engine.resolve_endpoint_sets(index, cfg)
         except engine.TrafficProblems as exc:
@@ -97,8 +99,10 @@ def configure(ixn: Any, cfgs: list[TrafficItemConfig], mode: str, dry_run: bool)
     if problems:
         raise IxToolError(VALIDATION, f"{len(problems)} problem(s); nothing was changed", errors=problems[:40],
                           hint="Endpoints are object names (find_nodes); packet headers from describe_packet_headers.")
-    if dry_run:
-        return {"dry_run": True, "valid": True, "plan": [{"name": c.name, "action": a} for c, a in plans]}
+    if dry_run:  # an update writes only the keys that were sent
+        return {"dry_run": True, "valid": True, "plan": [
+            {"name": c.name, "action": a, **({"changes": sorted(c.model_fields_set - {"name"})} if a == "update" else {})}
+            for c, a in plans]}
     results, failed = [], []
     for cfg, action in plans:
         try:
@@ -153,8 +157,10 @@ def register(app: FastMCP, manager: SessionManager) -> None:
         device groups or topologies (find_nodes). A subset of an object's devices: add "port_start" (1-based
         or vport name), "port_count", "device_start", "device_count" (1-based, per port) to the endpoint.
         "stack" lists headers in packet order; repeat a protocol for more of it (two "mpls" entries =
-        two labels). Everything is resolved first; nothing changes if anything is wrong. Items are generated; a warning about unresolved MACs is normal until
-        protocols are started. Read get_guide('traffic') for all fields."""
+        two labels). On an existing item only the keys you send change (e.g. name + a new frame_rate);
+        endpoint_sets is needed only to create an item or to change its endpoints. Everything is
+        resolved first; nothing changes if anything is wrong. Items are generated; a warning about
+        unresolved MACs is normal until protocols are started. Read get_guide('traffic') for all fields."""
         cfgs = _parse(items)
         ts = manager.resolve(target)
         result = await manager.call(target, lambda ixn: configure(ixn, cfgs, mode, dry_run), write=not dry_run)

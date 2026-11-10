@@ -300,48 +300,84 @@ def _place_headers(ce: Any, wanted: list[tuple[Any, dict[str, Any]]]) -> None:
         cursor += 1
 
 
-def apply_config_element(ce: Any, cfg: ConfigElementConfig, templates: Templates, where: str,
-                         problems: list[str]) -> None:
-    ce.FrameRate.update(Type=cfg.frame_rate.type.value, Rate=cfg.frame_rate.rate)
-    fs = ce.FrameSize
-    fs.Type = cfg.frame_size.type.value
-    if cfg.frame_size.type == FrameSizeType.FIXED:
-        fs.FixedSize = cfg.frame_size.fixed_size
-    elif cfg.frame_size.type == FrameSizeType.INCREMENT:
-        if cfg.frame_size.min_size is not None:
-            fs.IncrementFrom = cfg.frame_size.min_size
-        if cfg.frame_size.max_size is not None:
-            fs.IncrementTo = cfg.frame_size.max_size
-        if cfg.frame_size.step_size is not None:
-            fs.IncrementStep = cfg.frame_size.step_size
-    elif cfg.frame_size.type == FrameSizeType.RANDOM:
-        if cfg.frame_size.min_size is not None:
-            fs.RandomMin = cfg.frame_size.min_size
-        if cfg.frame_size.max_size is not None:
-            fs.RandomMax = cfg.frame_size.max_size
+def _fields(model: Any, only_sent: bool) -> set[str]:
+    """The fields to write: every field when an item is created, only those the request named when
+    an existing item is updated (so what was not sent stays as it is)."""
+    return set(model.model_fields_set) if only_sent else set(type(model).model_fields)
 
-    tc = cfg.transmission
+
+def _apply_frame_size(fs: Any, cfg: Any, sent: set[str]) -> None:
+    kind = cfg.type.value if "type" in sent else fs.Type
+    if "type" in sent:
+        fs.Type = kind
+
+    def put(field: str, attr: str) -> None:
+        value = getattr(cfg, field)
+        if field in sent and value is not None:
+            setattr(fs, attr, value)
+
+    if kind == FrameSizeType.FIXED.value:
+        put("fixed_size", "FixedSize")
+    elif kind == FrameSizeType.INCREMENT.value:
+        put("min_size", "IncrementFrom")
+        put("max_size", "IncrementTo")
+        put("step_size", "IncrementStep")
+    elif kind == FrameSizeType.RANDOM.value:
+        put("min_size", "RandomMin")
+        put("max_size", "RandomMax")
+    elif kind == FrameSizeType.WEIGHTED_PAIRS.value:
+        if "weighted_pairs" in sent and cfg.weighted_pairs:
+            fs.WeightedPairs = [n for pair in cfg.weighted_pairs for n in pair]  # the server takes a flat list
+    elif kind == FrameSizeType.PRESET.value:
+        put("preset", "PresetDistribution")
+
+
+def _apply_transmission(control: Any, tc: Any, sent: set[str]) -> None:
+    kind = tc.type.value if "type" in sent else control.Type
     kw: dict[str, Any] = {}
-    if tc.type == TransmissionType.FIXED_FRAME_COUNT and tc.frame_count is not None:
-        kw["FrameCount"] = tc.frame_count
-    elif tc.type == TransmissionType.FIXED_DURATION and tc.duration is not None:
-        kw["Duration"] = tc.duration
-    elif tc.type in (TransmissionType.BURST_AUTO, TransmissionType.BURST_CUSTOM, TransmissionType.BURST_FIXED_DURATION):
-        if tc.min_gap_bytes is not None:
-            kw["MinGapBytes"] = tc.min_gap_bytes
-        if tc.inter_burst_gap is not None:
+
+    def take(field: str, attr: str) -> None:
+        value = getattr(tc, field)
+        if field in sent and value is not None:
+            kw[attr] = value
+
+    if kind == TransmissionType.FIXED_FRAME_COUNT.value:
+        take("frame_count", "FrameCount")
+    elif kind == TransmissionType.FIXED_DURATION.value:
+        take("duration", "Duration")
+    elif kind == TransmissionType.FIXED_ITERATION_COUNT.value:
+        take("iteration_count", "IterationCount")
+    elif kind in (TransmissionType.BURST_AUTO.value, TransmissionType.BURST_CUSTOM.value,
+                  TransmissionType.BURST_FIXED_DURATION.value):
+        take("min_gap_bytes", "MinGapBytes")
+        if "inter_burst_gap" in sent and tc.inter_burst_gap is not None:
             kw.update(EnableInterBurstGap=True, InterBurstGap=tc.inter_burst_gap,
                       InterBurstGapUnits=tc.inter_burst_gap_units)
-        if tc.type in (TransmissionType.BURST_CUSTOM, TransmissionType.BURST_FIXED_DURATION) and \
-                tc.burst_packet_count is not None:
-            kw["BurstPacketCount"] = tc.burst_packet_count
-        if tc.type == TransmissionType.BURST_FIXED_DURATION and tc.repeat_burst is not None:
-            kw["RepeatBurst"] = tc.repeat_burst
-    ce.TransmissionControl.update(Type=tc.type.value)  # separate PATCH (see module docstring)
+        if kind != TransmissionType.BURST_AUTO.value:
+            take("burst_packet_count", "BurstPacketCount")
+        if kind == TransmissionType.BURST_FIXED_DURATION.value:
+            take("repeat_burst", "RepeatBurst")
+    if "type" in sent:
+        control.update(Type=kind)  # separate PATCH (see module docstring)
     if kw:
-        ce.TransmissionControl.update(**kw)
+        control.update(**kw)
 
-    if not cfg.stack:
+
+def apply_config_element(ce: Any, cfg: ConfigElementConfig, templates: Templates, where: str,
+                         problems: list[str], only_sent: bool = False) -> None:
+    sent = _fields(cfg, only_sent)
+    if "frame_rate" in sent:
+        named = _fields(cfg.frame_rate, only_sent)
+        kw = {attr: value for field, attr, value in (("type", "Type", cfg.frame_rate.type.value),
+                                                     ("rate", "Rate", cfg.frame_rate.rate)) if field in named}
+        if kw:
+            ce.FrameRate.update(**kw)
+    if "frame_size" in sent:
+        _apply_frame_size(ce.FrameSize, cfg.frame_size, _fields(cfg.frame_size, only_sent))
+    if "transmission" in sent:
+        _apply_transmission(ce.TransmissionControl, cfg.transmission, _fields(cfg.transmission, only_sent))
+
+    if "stack" not in sent or not cfg.stack:
         return
     wanted = []
     for i, header in enumerate(cfg.stack):
@@ -368,19 +404,23 @@ def apply_config_element(ce: Any, cfg: ConfigElementConfig, templates: Templates
         _apply_stack_fields(stacks[idx], header, f"{where}.stack[{i}]", problems)
 
 
-def apply_tracking(ti: Any, cfg: FlowTrackingConfig, where: str, problems: list[str]) -> None:
+def apply_tracking(ti: Any, cfg: FlowTrackingConfig, where: str, problems: list[str],
+                   only_sent: bool = False) -> None:
+    sent = _fields(cfg, only_sent)
     tr = ti.Tracking.find()[0]
-    available = list(tr.AvailableTrackBy or [])
-    bad = [t for t in cfg.track_by if available and t not in available]
-    if bad:
-        problems.append(f"{where}.flow_tracking.track_by: unknown {bad} (available e.g. "
-                        f"{_close(bad[0], available)})")
-        return
-    track = list(cfg.track_by)
-    if track and "trackingenabled0" not in track:
-        track.insert(0, "trackingenabled0")  # tracking does nothing without it
-    tr.TrackBy = track
-    tr.FieldWidth = cfg.field_width
+    if "track_by" in sent:
+        available = list(tr.AvailableTrackBy or [])
+        bad = [t for t in cfg.track_by if available and t not in available]
+        if bad:
+            problems.append(f"{where}.flow_tracking.track_by: unknown {bad} (available e.g. "
+                            f"{_close(bad[0], available)})")
+            return
+        track = list(cfg.track_by)
+        if track and "trackingenabled0" not in track:
+            track.insert(0, "trackingenabled0")  # tracking does nothing without it
+        tr.TrackBy = track
+    if "field_width" in sent:
+        tr.FieldWidth = cfg.field_width
     if cfg.protocol_offset is not None:
         tr.ProtocolOffset = cfg.protocol_offset
     if cfg.offset is not None:
@@ -402,11 +442,16 @@ def _set_endpoint_sets(ti: Any, resolved: list[dict[str, Any]]) -> None:
         ti.EndpointSet.add(**entry)
 
 
-def _finish(ti: Any, cfg: TrafficItemConfig, templates: Templates) -> tuple[list[str], list[str]]:
+def _finish(ti: Any, cfg: TrafficItemConfig, templates: Templates,
+            only_sent: bool = False) -> tuple[list[str], list[str]]:
     problems: list[str] = []
-    for idx, ce in enumerate(ti.ConfigElement.find()):
-        apply_config_element(ce, cfg.config_element_for(idx), templates, f"{cfg.name}.config_elements[{idx}]", problems)
-    apply_tracking(ti, cfg.flow_tracking, cfg.name, problems)
+    sent = _fields(cfg, only_sent)
+    if "config_elements" in sent:
+        for idx, ce in enumerate(ti.ConfigElement.find()):
+            apply_config_element(ce, cfg.config_element_for(idx), templates, f"{cfg.name}.config_elements[{idx}]",
+                                 problems, only_sent)
+    if "flow_tracking" in sent:
+        apply_tracking(ti, cfg.flow_tracking, cfg.name, problems, only_sent)
     if problems:
         return problems, []
     ti.Generate()
@@ -454,16 +499,59 @@ def _raise_self_destined_hint(exc: Exception, cfg: TrafficItemConfig) -> None:
                       **err.extra) from exc
 
 
-def update(ixn: Any, cfg: TrafficItemConfig, ti: Any, index: ConfigIndex, templates: Templates) -> dict[str, Any]:
-    resolved = resolve_endpoint_sets(index, cfg)
-    ti.update(TrafficType=cfg.traffic_type.value, BiDirectional=cfg.bi_directional, SrcDestMesh=cfg.src_dest_mesh,
-              AllowSelfDestined=cfg.self_destined, Enabled=cfg.enabled)
+_ITEM_ATTRS = (("traffic_type", "TrafficType"), ("bi_directional", "BiDirectional"), ("src_dest_mesh", "SrcDestMesh"),
+               ("self_destined", "AllowSelfDestined"), ("enabled", "Enabled"))
+
+
+def _over_current(current: dict[str, Any], cfg: TrafficItemConfig) -> TrafficItemConfig:
+    """The item as it is now (read_full) with the keys the request named laid over it: one config
+    element per new endpoint set, settings merged field by field, a sent `stack` replacing the old one."""
+    from pydantic import ValidationError
+
+    req = cfg.model_dump(exclude_unset=True, mode="json")
+    merged = {**current, **{k: v for k, v in req.items() if k not in ("config_elements", "flow_tracking")}}
+    merged["flow_tracking"] = {**(current.get("flow_tracking") or {}), **(req.get("flow_tracking") or {})}
+    was, sent = current.get("config_elements") or [{}], req.get("config_elements") or []
+    ces = []
+    for i in range(len(cfg.endpoint_sets)):
+        ce = dict(was[min(i, len(was) - 1)])
+        over = sent[min(i, len(sent) - 1)] if sent else {}
+        for key in ("frame_rate", "frame_size", "transmission"):
+            if key in over:
+                ce[key] = {**(ce.get(key) or {}), **over[key]}
+        if "stack" in over:
+            ce["stack"] = over["stack"]
+        ces.append(ce)
+    merged["config_elements"] = ces
     try:
-        _set_endpoint_sets(ti, resolved)
-    except Exception as exc:
-        _raise_self_destined_hint(exc, cfg)
-        raise
-    errors, warnings = _finish(ti, cfg, templates)
+        return TrafficItemConfig.model_validate(merged)
+    except ValidationError as exc:
+        where = "; ".join(f"{'.'.join(str(x) for x in e['loc'])}: {e['msg']}" for e in exc.errors()[:5])
+        raise TrafficProblems([f"{cfg.name}: this item has settings that cannot be rebuilt with new endpoint sets "
+                               f"({where}). Change it without endpoint_sets, or set those keys explicitly."]) from None
+
+
+def update(ixn: Any, cfg: TrafficItemConfig, ti: Any, index: ConfigIndex, templates: Templates) -> dict[str, Any]:
+    """Change an existing item: only the keys the request named are written. Endpoint sets are rebuilt
+    only when the request names them. IxNetwork then recreates the config elements, so the item as it
+    is now is laid under the request first, and rate, size, headers and tracking survive the rebuild."""
+    named = cfg.model_fields_set
+    rebuild = "endpoint_sets" in named and bool(cfg.endpoint_sets)
+    resolved = resolve_endpoint_sets(index, cfg) if rebuild else []
+    if rebuild:
+        cfg = _over_current(read_full(ixn, index, ti), cfg)
+    values = {"traffic_type": cfg.traffic_type.value, "bi_directional": cfg.bi_directional,
+              "src_dest_mesh": cfg.src_dest_mesh, "self_destined": cfg.self_destined, "enabled": cfg.enabled}
+    top = {attr: values[field] for field, attr in _ITEM_ATTRS if field in named}
+    if top:
+        ti.update(**top)
+    if rebuild:
+        try:
+            _set_endpoint_sets(ti, resolved)
+        except Exception as exc:
+            _raise_self_destined_hint(exc, cfg)
+            raise
+    errors, warnings = _finish(ti, cfg, templates, only_sent=not rebuild)
     if errors:
         raise TrafficProblems(errors)
     return _outcome(ti, warnings, "updated")
@@ -738,12 +826,27 @@ def read_full(ixn: Any, index: ConfigIndex, ti: Any) -> dict[str, Any]:
             frame_size.update(min_size=fs.IncrementFrom, max_size=fs.IncrementTo, step_size=fs.IncrementStep)
         elif fs.Type == "random":
             frame_size.update(min_size=fs.RandomMin, max_size=fs.RandomMax)
+        elif fs.Type == "weightedPairs":
+            flat = list(fs.WeightedPairs or [])
+            frame_size["weighted_pairs"] = [flat[i:i + 2] for i in range(0, len(flat) - 1, 2)]
+        elif fs.Type == "presetDistribution":
+            frame_size["preset"] = fs.PresetDistribution
         tc = ce.TransmissionControl
-        transmission = {"type": tc.Type}
+        transmission: dict[str, Any] = {"type": tc.Type}
         if tc.Type == "fixedFrameCount":
             transmission["frame_count"] = tc.FrameCount
         elif tc.Type == "fixedDuration":
             transmission["duration"] = tc.Duration
+        elif tc.Type == "fixedIterationCount":
+            transmission["iteration_count"] = tc.IterationCount
+        elif tc.Type in ("auto", "custom", "burstFixedDuration"):
+            transmission["min_gap_bytes"] = tc.MinGapBytes
+            if tc.EnableInterBurstGap:
+                transmission.update(inter_burst_gap=tc.InterBurstGap, inter_burst_gap_units=tc.InterBurstGapUnits)
+            if tc.Type != "auto":
+                transmission["burst_packet_count"] = tc.BurstPacketCount
+            if tc.Type == "burstFixedDuration":
+                transmission["repeat_burst"] = tc.RepeatBurst
         stack = []
         for s in ce.Stack.find():  # every header but the FCS, in packet order, so order and repeats round-trip
             if _is_fcs(s):

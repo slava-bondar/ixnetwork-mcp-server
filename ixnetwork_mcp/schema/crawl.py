@@ -24,28 +24,37 @@ import requests
 
 log = logging.getLogger("ixnetwork_mcp.schema.crawl")
 
-# (root type path, max depth below it; None = unlimited)
+# (root type path, max depth below it; None = unlimited). The roots are crawled one after another,
+# in this order: a class that occurs under several roots is expanded under the first (topology
+# before globals), and a deeper root comes before the shallower parent that would stop at it.
 DEFAULT_SCOPE: list[tuple[str, int | None]] = [
     ("", 0),  # root node itself: root operations (newConfig, loadConfig, ...)
     ("topology", None),
+    ("vport/l1Config", None),  # port L1 settings: one child per card type
+    ("vport/capture", None),   # capture filters and triggers
     ("vport", 1),
-    ("traffic", 0),
-    ("traffic/trafficItem", None),
-    ("globals/topology", 1),
+    ("traffic", None),         # items, global settings, statistics options (not the protocolTemplate catalog)
+    ("globals/topology", None),  # per-protocol global settings of NGPF (rates, timers, ARP ...)
+    ("globals", 1),            # preferences, application errors ... (not the classic protocolStack globals)
     ("resourceManager", 0),
-    ("statistics", 1),
     ("statistics/view", 2),
+    ("statistics", 1),
     ("availableHardware", 2),
     ("locations", 2),
     ("lag", 0),
-    ("quickTest", 0),  # QuickTest families the tools support (each family is a large subtree)
-    ("quickTest/rfc2544throughput", None),
+    ("quickTest/rfc2544throughput", None),  # the QuickTest families the tools support (each is a large subtree)
     ("quickTest/rfc2544frameLoss", None),
     ("quickTest/rfc2544back2back", None),
+    ("quickTest", 0),
 ]
 
+# Roots whose paths are fetched one at a time, never alongside another request: parallel OPTIONS on
+# the QuickTest families left a server without their testConfig / passCriteria metadata until
+# IxNetwork was restarted.
+SERIAL_ROOTS = ("quickTest",)
+
 # Children that are pure plumbing and would multiply the crawl without adding value.
-SKIP_CHILDREN = {"port", "genericProtocol"}
+SKIP_CHILDREN = {"port", "genericProtocol", "protocolTemplate"}  # protocolTemplate: read live when needed
 # Packet/encapsulation template catalogs (genericProtocol/encapsulations/*,
 # openFlowSwitch/.../protocolEncapsulationList/*): hundreds of nodes at 5-15 s per OPTIONS
 # and irrelevant to NGPF protocol configuration.
@@ -94,26 +103,31 @@ class Crawler:
         return None
 
     def crawl(self, scope: list[tuple[str, int | None]] = DEFAULT_SCOPE) -> None:
-        frontier: list[tuple[str, int | None, tuple[str, ...]]] = []
-        for root, depth in scope:
-            ancestors = tuple(p for p in root.split("/") if p)
-            frontier.append((root, depth, ancestors[:-1]))
-        level = 0
+        """One breadth-first pass per scope root, in the order given (see DEFAULT_SCOPE)."""
         with ThreadPoolExecutor(max_workers=self.workers) as pool:
-            while frontier:
-                seen: set[str] = set()
-                todo = [f for f in frontier if f[0] not in self.nodes and not (f[0] in seen or seen.add(f[0]))]
-                t0 = time.time()
-                results = list(pool.map(lambda f: (f, self.options(f[0])), todo))
-                log.info("level %d: %d nodes in %.1fs (total %d, dup %d, errors %d)", level, len(todo),
-                         time.time() - t0, len(self.nodes) + len(todo), self.duplicates, len(self.errors))
-                frontier = []
-                for (path, depth_left, ancestors), doc in results:
-                    if doc is not None:
-                        frontier.extend(self._add(path, depth_left, ancestors, doc.get("custom") or {}))
-                level += 1
-                if self.checkpoint:
-                    self.checkpoint(self)
+            for root, depth in scope:
+                ancestors = tuple(p for p in root.split("/") if p)
+                self._crawl_root(pool, [(root, depth, ancestors[:-1])], root or "(root)")
+
+    def _crawl_root(self, pool: ThreadPoolExecutor, frontier: list[tuple[str, int | None, tuple[str, ...]]],
+                    label: str) -> None:
+        level = 0
+        while frontier:
+            seen: set[str] = set()
+            todo = [f for f in frontier if f[0] not in self.nodes and not (f[0] in seen or seen.add(f[0]))]
+            t0 = time.time()
+            serial = [f for f in todo if f[0].split("/", 1)[0] in SERIAL_ROOTS]
+            results = list(pool.map(lambda f: (f, self.options(f[0])), [f for f in todo if f not in serial]))
+            results += [(f, self.options(f[0])) for f in serial]  # the pool is idle by now
+            log.info("%s level %d: %d nodes in %.1fs (total %d, dup %d, errors %d)", label, level, len(todo),
+                     time.time() - t0, len(self.nodes) + len(todo), self.duplicates, len(self.errors))
+            frontier = []
+            for (path, depth_left, ancestors), doc in results:
+                if doc is not None:
+                    frontier.extend(self._add(path, depth_left, ancestors, doc.get("custom") or {}))
+            level += 1
+            if self.checkpoint:
+                self.checkpoint(self)
 
     def _add(self, path: str, depth_left: int | None, ancestors: tuple[str, ...],
              custom: dict[str, Any]) -> list[tuple[str, int | None, tuple[str, ...]]]:

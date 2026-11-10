@@ -5,11 +5,15 @@ IxNetwork **Windows GUI** instance through its REST API (port 11009, session 1):
 
 - inspect ports, topologies, protocol sessions and traffic
 - build NGPF topologies and protocol stacks declaratively: Ethernet/VLAN, IPv4/IPv6, BGP
-  (including EVPN over VXLAN or MPLS: Type-5 prefix pools and Type-2 MAC/IP pools), LDP,
-  OSPFv2/v3, IS-IS (including Segment Routing), IGMP/MLD, DHCPv4/v6 client and server,
-  loopbacks, network groups with route pools
-- create traffic items between the configured endpoints, run protocols and traffic, and read
-  statistics
+  (communities, AS path, EVPN over VXLAN or MPLS: Type-5 prefix pools and Type-2 MAC/IP
+  pools), LDP, OSPFv2/v3, IS-IS (including Segment Routing), IGMP/MLD, DHCPv4/v6 client and
+  server, loopbacks, network groups with route pools
+- build any other protocol IxNetwork has (BFD, PIM, RSVP-TE, VXLAN, L3VPN ...) in the same
+  validated step, by naming its object types
+- read and change settings outside topologies: port L1 (speed, FEC, auto-negotiation), traffic
+  measurement options (latency, jitter, sequence checking), per-protocol global settings
+- create traffic items between the configured endpoints (IMIX, packet headers, label stacks),
+  change them key by key, run protocols and traffic, and read statistics
 - save, compare and restore configurations
 
 Every change is applied to the live session shown in the IxNetwork GUI. Changes are validated
@@ -20,7 +24,9 @@ Destructive actions need explicit confirmation and can be disabled per target.
 
 - Python 3.11+ and [uv](https://docs.astral.sh/uv/)
 - IxNetwork Windows GUI with the REST API enabled (tested with IxNetwork 10.00). The REST
-  schema of other IxNetwork builds is discovered automatically on first use.
+  schema of other IxNetwork builds is discovered automatically on first use, and the value
+  formats the schema does not publish are learned from the objects the server reads (both are
+  kept in `~/.ixnetwork-mcp/schema-cache/`).
 
 ## Install
 
@@ -94,19 +100,19 @@ Options: `-T/--targets a,b` exposes only some inventory entries, and
 | Tool | Purpose |
 |---|---|
 | `list_targets` | configured targets, guard flags, IxNetwork build |
-| `get_session_overview` | ports and link state, topology tree with session counts, traffic items, status |
-| `list_ports` | vports and chassis ports (owners, link state, LLDP neighbours) |
-| `find_nodes` / `get_node` | find objects by type / name / subtree; show one object's values and state |
+| `get_session_overview` | ports and link state, topology tree with session counts, traffic items, status, IxNetwork's recent errors |
+| `list_ports` | vports with their L1 settings, and chassis ports (owners, link state, LLDP neighbours) |
+| `find_nodes` / `get_node` | find objects by type / name / subtree; show one object's values, state and children (any object, by name or xpath) |
 | `get_protocol_status` | per-protocol session up/down counts, errors, per-device state |
 | `get_learned_info` | routes / LSAs / adjacencies learned by BGP, OSPF and IS-IS (inline, or all rows to CSV) |
 | `search_node_types` / `describe_node_type` | the IxNetwork object model: attributes, formats, enums, defaults, children, operations |
 | `export_config` | scoped export in IxNetwork's import format |
-| `apply_config` | declarative build of topologies, protocol stacks and network groups, or additions to existing objects |
-| `set_attributes` / `add_node` / `delete_nodes` | change, create or delete individual objects |
+| `apply_config` | declarative build of topologies, protocol stacks and network groups (any object type through `children`), or additions to existing objects |
+| `set_attributes` / `add_node` / `delete_nodes` | change, create or delete individual objects, inside and outside topologies |
 | `run_operation` / `import_config_fragment` | IxNetwork operations and raw imports (advanced) |
 | `assign_ports` / `unassign_ports` | connect vports to chassis ports |
 | `control_protocols` | start / stop / restart down sessions / apply changes on the fly; whole objects or selected devices |
-| `configure_traffic_items` / `get_traffic_items` | create, update and read traffic items |
+| `configure_traffic_items` / `get_traffic_items` | create and read traffic items; an update changes only the keys it names |
 | `describe_packet_headers` / `edit_packet_headers` | packet header templates, an item's packet, and in-place header edits (e.g. MPLS labels) |
 | `control_traffic` | generate / apply / start / stop traffic, clear statistics |
 | `get_stats` | statistics views with row filters |
@@ -128,6 +134,6 @@ between VMs: ports owned by another session are never taken over unless the targ
 ## Limitations
 
 - Only the IxNetwork Windows GUI REST API is supported (one session per VM).
-- BGP communities / AS-path lists and several IGMP/MLD group ranges per host are set through
-  the `attributes` passthrough of `apply_config`, not through dedicated keys.
+- Several IGMP/MLD group ranges per host are set through the `attributes` passthrough of
+  `apply_config`, not through dedicated keys.
 - The HTTP transport has no authentication; bind it to loopback only.

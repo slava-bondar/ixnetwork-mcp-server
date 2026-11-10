@@ -15,9 +15,11 @@ Topics (read with `get_guide(topic)`):
 Tools available now:
 - look around: `list_targets`, `get_session_overview`, `list_ports`, `get_protocol_status`,
   `get_learned_info`
-- find and inspect objects: `find_nodes`, `get_node`, `export_config`
+- find and inspect objects: `find_nodes`, `get_node`, `export_config`. An xpath reaches any object,
+  also outside topologies (port L1, traffic statistics options, protocol globals): see `workflow`
 - learn the object model: `search_node_types`, `describe_node_type`, `get_guide`
-- build configuration declaratively: `apply_config` (whole topologies, or additions via `extend`)
+- build configuration declaratively: `apply_config` (whole topologies, or additions via `extend`;
+  any object type through `children`)
 - change configuration piece by piece: `set_attributes`, `add_node`, `delete_nodes`, `run_operation`,
   `import_config_fragment` (advanced)
 - ports and protocols: `assign_ports`, `unassign_ports`, `control_protocols`

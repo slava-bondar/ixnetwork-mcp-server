@@ -118,7 +118,8 @@ def assign_ports(ixn: Any, mappings: list[dict[str, str]], *, create_missing: bo
         rows.append({"vport": s.get("name"), "location": s.get("location"), "state": s.get("connectionState")})
         if s.get("connectionState") != LINK_OK:
             warnings.append(f"{s.get('name')}: {s.get('connectionState')} {s.get('connectionStatus') or ''}".strip()
-                            + " — check cabling / DUT port, or the port's L1 speed (get_node on the vport's l1Config)")
+                            + " — check cabling / DUT port, or the port's L1 settings (list_ports shows them "
+                              "with the xpath to change them through set_attributes)")
     return {"ports": rows, "warnings": warnings}
 
 

@@ -23,4 +23,4 @@ topology (bound to one or more ports/vports)
 ```
 
 Traffic items reference these objects as endpoints (ipv4/ipv6 stacks, network groups,
-dhcp clients, whole topologies) — see the traffic topic once available.
+dhcp clients, whole topologies) — see `get_guide('traffic')`.

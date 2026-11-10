@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from . import rest
-from .errors import IXN_ERROR, NOT_FOUND, VALIDATION, IxToolError
+from .errors import GUARD_BLOCKED, IXN_ERROR, NOT_FOUND, VALIDATION, IxToolError
 from .refs import ConfigIndex, Node
 from .schema.index import SchemaIndex
 from .values import (ValueSpec, ValueSyntaxError, compile_value, mv_to_value, parse_value, same_value,
@@ -39,8 +39,19 @@ DENY_OPERATIONS = {
     "connectcardbyid": None, "disconnectcardbyid": None, "removealltclviews": None,
     "rebuildchassistopology": None, "refreshchassistopology": None, "rediscoverappliances": None,
     "collectlogs": None, "copyfile": None,
+    # connectPorts(arg2=true) forces ownership of a chassis port: only assign_ports checks the takeover guard
+    "connectport": "assign_ports", "connectports": "assign_ports",
+    # card / chassis modes are shared with every other session on the chassis
+    "setchassismode": None, "switchmodelocations": None, "switchmode": None,
+    "switchrguserownershipcontrolmode": None, "hotswapcard": None,
+    # raw imports have their own guarded tools
+    "importconfig": "import_config_fragment", "importconfigfile": "load_config",
 }
 READ_PREFIXES = ("get", "fetch", "check")
+# operations that send traffic need guards.allow_traffic_start, like control_traffic('start')
+TRAFFIC_START_OPERATIONS = {"startstatelesstraffic", "startstatelesstrafficblocking", "starttestconfiguration",
+                            "sendl2l3learning"}
+TRAFFIC_ROOTS = ("traffic", "quickTest")  # there, every start* / run operation sends traffic
 
 
 # ---------------------------------------------------------------------------- import
@@ -84,7 +95,7 @@ def on_the_fly_warning(ixn: Any) -> str | None:
     state = rest.get(ixn, "globals/topology?includes=applyOnTheFlyState").get("applyOnTheFlyState")
     if state == "allowed":
         return ("protocols are running: the change is pending until applied on the fly "
-                "(control_protocols(action='apply_changes') once available, or 'Apply changes' in the GUI)")
+                "(control_protocols(action='apply_changes'), or 'Apply changes' in the GUI)")
     return None
 
 
@@ -92,6 +103,31 @@ def on_the_fly_warning(ixn: Any) -> str | None:
 
 def _suggest(name: str, choices: list[str]) -> list[str] | None:
     return difflib.get_close_matches(name, choices, n=5, cutoff=0.5) or None
+
+
+_NOT_ATTRIBUTES = {"href", "id", "xpath", "links"}
+
+
+def convert_like(current: Any, attr: str, raw: Any) -> tuple[Any, str | None]:
+    """Convert a value for an attribute the schema does not describe, by the type of its current
+    value. The server still rejects bad values (400) and the read-back check catches ignored ones."""
+    try:
+        if isinstance(current, bool):
+            if isinstance(raw, bool):
+                return raw, None
+            if str(raw).lower() in ("true", "false"):
+                return str(raw).lower() == "true", None
+            raise ValueError
+        if isinstance(current, (int, float)):
+            if isinstance(raw, bool):
+                raise ValueError
+            n = float(raw)
+            return (int(n) if n.is_integer() else n), None
+        if isinstance(current, str):
+            return str(raw), None
+    except (TypeError, ValueError):
+        return None, f"{attr}: '{raw}' does not fit the current value {current!r}"
+    return raw, None
 
 
 def convert_plain(meta: dict[str, Any], attr: str, raw: Any, index: ConfigIndex) -> tuple[Any, str | None]:
@@ -173,10 +209,12 @@ def _plan_attributes(node: Node, live: dict[str, Any], meta: dict[str, dict[str,
                                  mv_to_value(cur), len(cur.get("nest") or [])))
             continue
         kind = (m or {}).get("kind")
-        if kind == "readonly" or (m is None and not creating):
+        # a type the schema of this build does not describe (older cache, other build): go by the live object
+        undescribed = not meta and not creating and attr not in _NOT_ATTRIBUTES
+        if kind == "readonly" or (m is None and not creating and not undescribed):
             errors.append(f"{attr} is read-only")
             continue
-        value, err = convert_plain(m or {}, attr, raw, index)
+        value, err = convert_like(cur, attr, raw) if undescribed else convert_plain(m or {}, attr, raw, index)
         if err:
             errors.append(err)
             continue
@@ -211,6 +249,7 @@ def set_attributes(ixn: Any, schema: SchemaIndex, ref: str, values: dict[str, An
     index = ConfigIndex.build(ixn, props=["name"])
     node = index.resolve(ref)
     live = rest.select(ixn, node.href, properties=["*"], inlines=rest.MV_INLINES)[0]
+    schema.remember(node.type_path, live)  # formats / enums of its per-device values, for later calls
     meta = schema.attribute_meta(node.type_path)
     patch, mvs, before, errors = _plan_attributes(node, live, meta, values, index)
     if errors:
@@ -245,6 +284,9 @@ def set_attributes(ixn: Any, schema: SchemaIndex, ref: str, values: dict[str, An
     changed = {k: {"before": before[k], "after": after.get(k)} for k in patch}
     changed.update({c.attr: {"before": c.before_shown, "after": mv_to_value(after.get(c.attr) or {})} for c in mvs})
     warnings = outcome.warnings + [w for w in [on_the_fly_warning(ixn)] if w]
+    if not meta:
+        warnings.append(f"the schema of this IxNetwork build does not describe {node.type}: the values were "
+                        "checked against the live object and read back, not against the schema")
     return {"ref": target, "changed": changed, "warnings": warnings}
 
 
@@ -408,6 +450,10 @@ def check_denied(operation: str) -> None:
 
 def resolve_operation(schema: SchemaIndex, type_path: str, operation: str) -> tuple[str, list[dict[str, Any]]]:
     info = schema.resolve(type_path) if type_path else None
+    check_denied(operation)
+    if type_path and info is None:
+        raise IxToolError(VALIDATION, f"the schema of this IxNetwork build does not describe {type_path}, so its "
+                                      "operations cannot be run through run_operation")
     raw_ops = (info.raw if info else schema.nodes.get("", {})).get("operations") or []
     by_lower: dict[str, list[dict[str, Any]]] = {}
     for o in raw_ops:
@@ -426,14 +472,25 @@ def is_read_operation(name: str) -> bool:
     return name.lower().startswith(READ_PREFIXES)
 
 
+def starts_traffic(operation: str, type_path: str = "") -> bool:
+    """Does this operation send traffic? By name anywhere, and any start* / run under traffic or quickTest."""
+    op = operation.lower()
+    if op in TRAFFIC_START_OPERATIONS:
+        return True
+    return type_path.split("/", 1)[0] in TRAFFIC_ROOTS and (op.startswith("start") or op in ("run", "runasync"))
+
+
 def run_operation(ixn: Any, schema: SchemaIndex, ref: str | None, operation: str,
-                  args: dict[str, Any] | None) -> dict[str, Any]:
+                  args: dict[str, Any] | None, *, allow_traffic_start: bool = True) -> dict[str, Any]:
     root = rest.root(ixn)
     if ref and ref.strip() not in ("", "/"):
         node = ConfigIndex.build(ixn, props=["name"]).resolve(ref)
         href, type_path = node.href, node.type_path
     else:
         node, href, type_path = None, root, ""
+    if not allow_traffic_start and starts_traffic(operation, type_path):
+        raise IxToolError(GUARD_BLOCKED, f"'{operation}' starts traffic, which is disabled for this target",
+                          hint="The inventory's guards.allow_traffic_start is false; tell the user.")
     name, overloads = resolve_operation(schema, type_path, operation)
     payload: dict[str, Any] = {}
     first = (overloads[0].get("args") or [{}])[0] if overloads[0].get("args") else None

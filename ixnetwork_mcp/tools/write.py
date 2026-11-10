@@ -89,13 +89,17 @@ def register(app: FastMCP, manager: SessionManager) -> None:
         arguments as {"arg2": ..., ...} (arg1 = the object itself is filled in). Operations whose
         name starts with get/fetch/check run directly; anything else changes state or sends
         packets and needs confirm=true after asking the user. Config/port-level operations
-        (newConfig, loadConfig, assignPorts ...) are only available through their dedicated tools."""
+        (newConfig, loadConfig, assignPorts ...) are only available through their dedicated tools,
+        and operations that start traffic need the target's guards.allow_traffic_start."""
         schema, warnings = await schema_for(manager, target)
         ts = manager.resolve(target)
         compiler.check_denied(operation)
+        allow_start = ts.target.guards.allow_traffic_start
+        if not allow_start and compiler.starts_traffic(operation):  # refuse before asking anyone to confirm
+            raise IxToolError(GUARD_BLOCKED, f"starting traffic is disabled for target '{ts.target.name}'")
         is_read = compiler.is_read_operation(operation)
         if not is_read:
             await confirm_action(ctx, ts, confirm, f"operation '{operation}'" + (f" on '{ref}'" if ref else ""))
-        result = await manager.call(target, lambda ixn: compiler.run_operation(ixn, schema, ref, operation, args),
-                                    write=not is_read)
+        result = await manager.call(target, lambda ixn: compiler.run_operation(
+            ixn, schema, ref, operation, args, allow_traffic_start=allow_start), write=not is_read)
         return ok(ts.target.name, result, warnings=warnings)

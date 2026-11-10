@@ -7,7 +7,7 @@ from typing import Any, Literal
 
 from mcp.server.fastmcp import FastMCP
 
-from .. import rest
+from .. import rest, runtime
 from ..errors import NOT_FOUND, IxToolError
 from ..session import SessionManager
 from .common import READ_ONLY, ok
@@ -98,6 +98,9 @@ def overview(ixn: Any, sections: list[str], depth: int) -> dict[str, Any]:
             "ports_link_up": sum(1 for v in vports if v.get("connectionState") == "connectedLinkUp"),
             "ports_total": len(vports),
         }
+        errors = runtime.recent_app_errors(ixn)  # the GUI's error pane: why a port, protocol or apply failed
+        if errors:
+            out["status"]["recent_errors"] = errors
     return out
 
 
@@ -134,7 +137,7 @@ def register(app: FastMCP, manager: SessionManager) -> None:
         """Summarize the live IxNetwork session: ports (vports with chassis location and link state),
         topologies as a tree (topology -> device groups -> protocol stack / network groups, with
         multipliers, device counts, status and session up/down counts), traffic items, and overall
-        status. Start here before changing anything. `sections` defaults to all of
+        status with IxNetwork's recent errors. Start here before changing anything. `sections` defaults to all of
         ports, topologies, traffic, status; `depth` limits the topology tree depth."""
         wanted = list(sections or ["ports", "topologies", "traffic", "status"])
         ts = manager.resolve(target)
@@ -146,7 +149,7 @@ def register(app: FastMCP, manager: SessionManager) -> None:
     @app.tool(annotations=READ_ONLY)
     async def get_guide(topic: str = "index") -> str:
         """Read the usage guide for this server (markdown). Topics: index (lists all topics),
-        workflow, safety, troubleshooting, and more as features are added. Read `workflow` before
+        workflow, spec, traffic, hierarchy, values, safety, troubleshooting. Read `workflow` before
         building a configuration."""
         return read_guide(topic)
 

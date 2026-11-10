@@ -156,14 +156,23 @@ class _Validator:
         tp = self.schema.child_type_path(parent_tp, node.type)
         if tp is None:
             where = parent_tp.rsplit("/", 1)[-1] if parent_tp else "the root"
-            self.err(f"{node.label}: a {node.type} cannot be placed under {where}")
+            hint = ""
+            if node.generic:  # a type the caller named: say what does fit
+                parent = self.schema.resolve(parent_tp) if parent_tp else None
+                names = [c["name"] for c in (self.schema.children(parent) if parent else []) if c["name"] != "port"]
+                close = compiler._suggest(node.type, names)
+                hint = f" (did you mean {close}?)" if close else f" (it takes: {', '.join(names[:25])})"
+            self.err(f"{node.label}: a {node.type} cannot be placed under {where}{hint}")
             return None
         info = self.schema.resolve(tp)
         if info is None:
             self.err(f"{node.label}: {node.type} is not in the schema for this IxNetwork build")
             return None
+        if node.generic:  # whether the xpath takes an index comes from the schema
+            node.singleton = info.raw.get("multiplicity") in ("one", "zeroOrOne")
         if not node.auto and not info.raw.get("add"):
-            self.err(f"{node.label}: {node.type} objects are created automatically by IxNetwork")
+            self.err(f"{node.label}: {node.type} objects are created automatically by IxNetwork"
+                     + (" (set auto: true to change the existing one)" if node.generic else ""))
         if node.auto and node.type in REQUIREMENTS and not (REQUIREMENTS[node.type] & dg_protocols):
             need = " or ".join(sorted(REQUIREMENTS[node.type]))
             self.err(f"{node.label}: needs {need} in the same device group (IxNetwork only creates "
@@ -355,6 +364,26 @@ def _post(ixn: Any, parent_href: str, ck: _Checked, ports: list[str]) -> str:
     return compiler.href_of(created)
 
 
+def _learn(ixn: Any, schema: SchemaIndex, planned: list[tuple[_Checked, str]]) -> None:
+    """One full read per object type the index has no live value formats for yet (types built through
+    `children`, or any type on a build without captured data), so that the next call is validated
+    against them. Never fails the build that just succeeded."""
+    from .refs import lookup_xpath
+
+    todo: dict[str, str] = {}
+    for ck, xp in planned:
+        info = schema.resolve(ck.type_path)
+        if info is not None and schema.needs_full_read(ck.type_path):
+            todo.setdefault(info.canonical, xp)
+    try:
+        for xp in todo.values():
+            node = lookup_xpath(ixn, xp)
+            if node is not None:
+                schema.remember(node.type_path, rest.select(ixn, node.href, properties=["*"], inlines=rest.MV_INLINES)[0])
+    except Exception as exc:  # noqa: BLE001
+        log.debug("could not read back the new object types: %s", exc)
+
+
 def _verify(ixn: Any, anchor_href: str, planned: list[tuple[_Checked, str]]) -> list[str]:
     types = sorted({ck.node.type for ck, _ in planned})
     attrs = sorted({"name", *[a for ck, _ in planned for a in ck.mv]})
@@ -384,8 +413,11 @@ def _verify(ixn: Any, anchor_href: str, planned: list[tuple[_Checked, str]]) -> 
         if want and not ck.node.auto and node.get("name") != want:
             problems.append(f"{ck.node.label}: name is '{node.get('name')}', expected '{want}'")
         for attr, spec in ck.mv.items():
-            got = mv_to_value(node.get(attr) or {}) if rest.is_multivalue(node.get(attr)) else node.get(attr)
-            if not same_value(spec, got, ck.fmt.get(attr)):
+            live = node.get(attr)
+            got = mv_to_value(live or {}) if rest.is_multivalue(live) else live
+            # types without captured metadata: compare by the format the server reports for the value
+            fmt = ck.fmt.get(attr) or (live.get("format") if rest.is_multivalue(live) else None)
+            if not same_value(spec, got, fmt):
                 problems.append(f"{ck.node.label}.{attr}: IxNetwork has {got!r}")
     return problems
 
@@ -470,6 +502,7 @@ def apply(ixn: Any, schema: SchemaIndex, raw_spec: Any, *, dry_run: bool = False
             if problems:
                 raise IxToolError(IXN_ERROR, f"IxNetwork did not build {unit.label} as specified",
                                   errors=problems[:40])
+            _learn(ixn, schema, planned)
             summary["objects"] = len(planned)
             if outcome.warnings:
                 summary["warnings"] = outcome.warnings[:10]

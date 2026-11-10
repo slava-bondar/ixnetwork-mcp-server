@@ -32277,5 +32277,358 @@
    ],
    "format": "decimal"
   }
+ },
+ "topology/deviceGroup/networkGroup/ipv4PrefixPools/bgpIPRouteProperty/bgpCommunitiesList": {
+  "type": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "valueList"
+   ],
+   "format": "enum",
+   "enums": [
+    "noexport",
+    "noadvertised",
+    "noexport_subconfed",
+    "manual",
+    "llgr_stale",
+    "no_llgr"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "noexport"
+   }
+  },
+  "asNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "decimal"
+  },
+  "lastTwoOctets": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "decimal"
+  }
+ },
+ "topology/deviceGroup/networkGroup/ipv4PrefixPools/bgpIPRouteProperty/bgpExtendedCommunitiesList": {
+  "type": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "valueList"
+   ],
+   "format": "enum",
+   "enums": [
+    "administratoras2octet",
+    "administratorip",
+    "administratoras4octet",
+    "opaque",
+    "evpn",
+    "administratoras2octetlinkbw",
+    "custom"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "administratoras2octet"
+   }
+  },
+  "subType": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "valueList"
+   ],
+   "format": "enum",
+   "enums": [
+    "routetarget",
+    "origin",
+    "extendedbandwidth",
+    "color",
+    "encapsulation",
+    "macaddress"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "routetarget"
+   }
+  },
+  "asNumber2Bytes": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "decimal"
+  },
+  "assignedNumber4Bytes": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "decimal"
+  },
+  "ip": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "ipv4"
+  },
+  "asNumber4Bytes": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "decimal"
+  },
+  "assignedNumber2Bytes": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "decimal"
+  },
+  "opaqueData": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "hex"
+  },
+  "colorCOBits": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "valueList"
+   ],
+   "format": "enum",
+   "enums": [
+    "00",
+    "01",
+    "10",
+    "11"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "00"
+   }
+  },
+  "colorReservedBits": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "decimal"
+  },
+  "colorValue": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "decimal"
+  },
+  "colorValInc": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "decimal"
+  },
+  "customExtCommType": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "decimal"
+  },
+  "customExtCommValue": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "hex"
+  }
+ },
+ "topology/deviceGroup/networkGroup/ipv4PrefixPools/bgpIPRouteProperty/bgpAsPathSegmentList": {
+  "enableASPathSegment": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "subset",
+    "customDistributed"
+   ],
+   "format": "bool",
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   }
+  },
+  "segmentType": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "valueList"
+   ],
+   "format": "enum",
+   "enums": [
+    "asset",
+    "asseq",
+    "assetconfederation",
+    "asseqconfederation"
+   ],
+   "default": {
+    "pattern": "singleValue",
+    "value": "asset"
+   }
+  }
+ },
+ "topology/deviceGroup/networkGroup/ipv4PrefixPools/bgpIPRouteProperty/bgpAsPathSegmentList/bgpAsNumberList": {
+  "enableASNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "alternate",
+    "counter",
+    "random",
+    "repeatableRandom",
+    "custom",
+    "valueList",
+    "subset",
+    "customDistributed"
+   ],
+   "format": "bool",
+   "default": {
+    "pattern": "singleValue",
+    "value": "true"
+   }
+  },
+  "asNumber": {
+   "availablePatterns": [
+    "singleValue",
+    "shared",
+    "counter",
+    "custom",
+    "repeatableRandomRange",
+    "random",
+    "repeatableRandom",
+    "valueList",
+    "customDistributed",
+    "subset"
+   ],
+   "format": "decimal"
+  }
  }
 }

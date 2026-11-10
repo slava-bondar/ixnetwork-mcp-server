@@ -28,7 +28,8 @@ def register(app: FastMCP, manager: SessionManager) -> None:
         config.json (portable: ports incl. L1, topologies, traffic item definitions) and
         manifest.json. Call only when the user asks to save/back up (e.g. "save the config as
         bgp-baseline"). `name` defaults to a timestamp; `path` overrides the target's config_dir;
-        an existing save is only replaced with overwrite=true."""
+        an existing save is only replaced with overwrite=true. The ixncfg format changes the file
+        name the GUI shows for the open configuration; formats=['json'] leaves it alone."""
         ts = manager.resolve(target)
         name_, dest = configstore.resolve_dir(ts.target.saved_configs_dir, name, path)
         fmts = list(formats or ["ixncfg", "json"])

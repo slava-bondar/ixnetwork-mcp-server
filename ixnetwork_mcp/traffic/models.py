@@ -36,12 +36,15 @@ class FrameSizeType(str, Enum):
     RANDOM = "random"
     QUAD_GAUSSIAN = "quadGaussian"
     WEIGHTED_PAIRS = "weightedPairs"
+    PRESET = "presetDistribution"
+    AUTO = "auto"
 
 
 class TransmissionType(str, Enum):
     CONTINUOUS = "continuous"
     FIXED_FRAME_COUNT = "fixedFrameCount"
     FIXED_DURATION = "fixedDuration"
+    FIXED_ITERATION_COUNT = "fixedIterationCount"
     BURST_AUTO = "auto"
     BURST_CUSTOM = "custom"
     BURST_FIXED_DURATION = "burstFixedDuration"
@@ -58,17 +61,48 @@ class FrameSizeConfig(_M):
     min_size: int | None = Field(None, ge=60)
     max_size: int | None = Field(None, le=16000)
     step_size: int | None = None
+    weighted_pairs: list[tuple[int, int]] | None = None  # IMIX: [[size, weight], ...] (type weightedPairs)
+    preset: Literal["cisco", "imix", "ipSecImix", "ipV6Imix", "rprQuar", "rprTri", "standardImix", "tcpImix",
+                    "tolly"] | None = None                # a built-in distribution (type presetDistribution)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _type_from_fields(cls, v: Any) -> Any:  # {"fixed_size": 128} means fixed; pairs / preset name their type
+        if isinstance(v, dict) and "type" not in v:
+            for key, kind in (("weighted_pairs", "weightedPairs"), ("preset", "presetDistribution"), ("fixed_size", "fixed")):
+                if v.get(key) is not None:
+                    return {**v, "type": kind}
+        return v
+
+    @model_validator(mode="after")
+    def _pairs(self) -> "FrameSizeConfig":
+        if self.type == FrameSizeType.WEIGHTED_PAIRS and self.weighted_pairs is not None and not self.weighted_pairs:
+            raise ValueError("weighted_pairs needs at least one [size, weight] pair")
+        if any(size < 1 or weight < 1 for size, weight in self.weighted_pairs or []):
+            raise ValueError("weighted_pairs: [size in bytes, weight] with both at least 1")
+        return self
 
 
 class TransmissionConfig(_M):
     type: TransmissionType = TransmissionType.CONTINUOUS
     frame_count: int | None = None
     duration: int | None = None
+    iteration_count: int | None = None
     min_gap_bytes: int | None = None
     inter_burst_gap: int | None = None
     inter_burst_gap_units: Literal["nanoseconds", "microseconds", "milliseconds", "seconds", "bytes"] = "nanoseconds"
     burst_packet_count: int | None = None
     repeat_burst: int | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _type_from_fields(cls, v: Any) -> Any:  # {"frame_count": 1000} means fixedFrameCount, and so on
+        if isinstance(v, dict) and "type" not in v:
+            for key, kind in (("frame_count", "fixedFrameCount"), ("duration", "fixedDuration"),
+                              ("iteration_count", "fixedIterationCount")):
+                if v.get(key) is not None:
+                    return {**v, "type": kind}
+        return v
 
 
 class EgressTrackingConfig(_M):
@@ -81,7 +115,7 @@ class EgressTrackingConfig(_M):
 
 class FlowTrackingConfig(_M):
     track_by: list[str] = Field(default_factory=lambda: ["trackingenabled0"])
-    field_width: Literal["eightBits", "sixteenBits", "thirtyTwoBits"] = "thirtyTwoBits"
+    field_width: Literal["eightBits", "sixteenBits", "twentyFourBits", "thirtyTwoBits"] = "thirtyTwoBits"
     protocol_offset: str | None = None
     offset: int | None = None
     egress: EgressTrackingConfig | None = None
@@ -216,13 +250,15 @@ class EndpointSetConfig(_M):
 
 
 class TrafficItemConfig(_M):
+    """A traffic item. Creating one needs endpoint_sets and applies every setting (defaults included).
+    Updating an existing one changes only the keys that were sent (`model_fields_set`)."""
     name: str
     traffic_type: TrafficType = TrafficType.IPV4
     bi_directional: bool = False
     self_destined: bool = False
-    src_dest_mesh: Literal["oneToOne", "manyToMany", "fullMesh"] = "oneToOne"
+    src_dest_mesh: Literal["oneToOne", "manyToMany", "fullMesh", "none"] = "oneToOne"
     enabled: bool = True
-    endpoint_sets: list[EndpointSetConfig] = Field(min_length=1)
+    endpoint_sets: list[EndpointSetConfig] = Field(default_factory=list)
     config_elements: list[ConfigElementConfig] = Field(default_factory=lambda: [ConfigElementConfig()])
     flow_tracking: FlowTrackingConfig = Field(default_factory=FlowTrackingConfig)
 

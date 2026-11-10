@@ -40,6 +40,7 @@ class Node:
     props: dict[str, Any] = field(default_factory=dict)
     parent: str | None = None  # parent xpath
     auto: bool = False  # auto-created helper (or inside one, e.g. tlvProfile/defaultTlv/object/...)
+    outside: bool = False  # not part of the index: looked up by its xpath (port L1, traffic settings, globals ...)
 
     @property
     def type_path(self) -> str:
@@ -56,8 +57,39 @@ class Node:
         return out
 
 
+def _find_xpath(obj: Any, xpath: str) -> dict[str, Any] | None:
+    if isinstance(obj, dict):
+        if obj.get("xpath") == xpath and "href" in obj:
+            return obj
+        obj = list(obj.values())
+    if isinstance(obj, list):
+        for value in obj:
+            if isinstance(value, (dict, list)):
+                hit = _find_xpath(value, xpath)
+                if hit is not None:
+                    return hit
+    return None
+
+
+def lookup_xpath(ixn: Any, xpath: str) -> Node | None:
+    """An object outside the indexed trees, by its xpath: a port's L1 or capture settings, a traffic
+    item's rate, the traffic statistics options, a protocol's global settings ... One select from the
+    root, limited to the type names on the xpath; href and xpath both come from the answer."""
+    segs = [s.split("[")[0] for s in xpath.strip("/").split("/")]
+    if not segs or not all(re.fullmatch(r"[A-Za-z0-9]+", s) for s in segs):
+        return None
+    regex = "^(" + "|".join(sorted(set(segs))) + ")$"
+    hit = _find_xpath(rest.select(ixn, rest.root(ixn), properties=[], children=[rest.child(regex, ["name"])]), xpath)
+    if hit is None:
+        return None
+    parent = xpath.rsplit("/", 1)[0] or None
+    return Node(href=hit["href"].rstrip("/"), xpath=xpath, type=segs[-1], name=hit.get("name"), parent=parent,
+                outside=True)
+
+
 class ConfigIndex:
     def __init__(self, nodes: list[Node]):
+        self.ixn: Any = None  # set by build(); lets resolve() look up xpaths outside the index
         self.nodes = nodes
         self.by_href = {n.href.rstrip("/"): n for n in nodes}
         self.by_xpath = {n.xpath: n for n in nodes}
@@ -83,7 +115,9 @@ class ConfigIndex:
                 r = rest.select(ixn, f"{root}/topology/{t['id']}", properties=props,
                                 children=[rest.child(INDEX_REGEX, props)])
                 _flatten(r[0], None, nodes)
-        return cls([n for n in nodes if n.type != "traffic"])
+        index = cls([n for n in nodes if n.type != "traffic"])
+        index.ixn = ixn
+        return index
 
     # ------------------------------------------------------------------ navigation
 
@@ -109,10 +143,15 @@ class ConfigIndex:
                               hint="Hrefs change after the configuration is reloaded; use names or re-read.")
         if ref.startswith("/"):
             node = self.by_xpath.get(ref)
+            if node is None and self.ixn is not None:
+                node = lookup_xpath(self.ixn, ref)
+                if node is not None:
+                    self.by_xpath[ref] = self.by_href[node.href] = node  # found once per call
             if node:
                 return self._check_type(node, wanted, ref)
             raise IxToolError(NOT_FOUND, f"no object at xpath {ref}",
-                              hint="Xpath positions shift when objects are deleted; re-read the overview or use names.",
+                              hint="Xpath positions shift when objects are deleted; re-read the overview or use names. "
+                                   "get_node lists an object's children with their xpaths.",
                               candidates=self._near_xpaths(ref))
         typed = re.match(r"^([A-Za-z0-9]+):(.+)$", ref)
         if typed and any(n.type.lower() == typed.group(1).lower() for n in self.nodes):

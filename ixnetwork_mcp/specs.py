@@ -21,9 +21,22 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 Value = Any  # validated later against the live/captured format of each attribute
 
 
+class NodeSpec(BaseModel):
+    """Any object type the IxNetwork schema allows under its parent (describe_node_type lists a
+    type's children and attributes): for protocols and settings without friendly keys."""
+    model_config = ConfigDict(extra="forbid")
+    type: str                                   # REST type name, e.g. pimV4Interface
+    name: str | None = None
+    attributes: dict[str, Any] = Field(default_factory=dict)   # REST name -> value (plain or per-device Value)
+    children: list["NodeSpec"] = Field(default_factory=list)
+    auto: bool = False                          # an object IxNetwork creates by itself: only its values are set
+    index: int | None = Field(None, ge=1)       # which entry of an auto list (default: 1, 2, ... in the order given)
+
+
 class _Spec(BaseModel):
     model_config = ConfigDict(extra="forbid")
     attributes: dict[str, Any] = Field(default_factory=dict, description="REST name -> value passthrough")
+    children: list[NodeSpec] = Field(default_factory=list, description="objects of any other type below this one")
 
 
 # ---------------------------------------------------------------------------- protocols
@@ -260,11 +273,38 @@ class LoopbackSpec(_Spec):
     ospf: OspfSpec | None = None
 
 
+_WELL_KNOWN_COMMUNITIES = {"no_export": "noexport", "no_advertise": "noadvertised",
+                           "no_export_subconfed": "noexport_subconfed", "llgr_stale": "llgr_stale", "no_llgr": "no_llgr"}
+_WELL_KNOWN_COMMUNITIES.update({v: v for v in list(_WELL_KNOWN_COMMUNITIES.values())})
+
+
+class CommunitySpec(_Spec):
+    """A BGP community; the shorthand "65001:100" or a well-known name ("no-export") fills the fields."""
+    type: Value = None                      # manual | noexport | noadvertised | noexport_subconfed | llgr_stale | no_llgr
+    as_number: Value = None                 # asNumber: the part before the colon (manual)
+    number: Value = None                    # lastTwoOctets: the part after the colon (manual)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _shorthand(cls, v: Any) -> Any:
+        if not isinstance(v, str):
+            return v
+        known = _WELL_KNOWN_COMMUNITIES.get(v.strip().lower().replace("-", "_"))
+        if known:
+            return {"type": known}
+        admin, num = _admin_and_number(v, "community")
+        if not admin.isdigit():
+            raise ValueError(f"community: expected 'AS:number' or one of {sorted(set(_WELL_KNOWN_COMMUNITIES.values()))}, got '{v}'")
+        return {"type": "manual", "as_number": int(admin), "number": num}
+
+
 class RoutePropertySpec(_Spec):
     next_hop: Value = None                  # an address; omitted = same as local IP
     origin: Value = None                    # BGP: igp | egp | incomplete; OSPF/IS-IS: routeOrigin enums
     local_pref: Value = None                # BGP
     med: Value = None                       # BGP
+    communities: list[CommunitySpec] = Field(default_factory=list)  # BGP: bgpCommunitiesList
+    as_path: list[Value] = Field(default_factory=list)              # BGP: one AS_SEQUENCE segment, in order
     metric: Value = None                    # OSPF / IS-IS
     prefix_sid_index: Value = None          # IS-IS SR: prefix SID index (isisL3PrefixesSrSid)
 
@@ -415,6 +455,7 @@ class PlanNode:
     singleton: bool = False                     # xpath segment without [i]
     index: int | None = None                    # fixed position for auto collections (vlan[i])
     requires: str | None = None                 # why an auto node should exist (for messages)
+    generic: bool = False                       # from `children`: the builder takes singleton-ness from the schema
 
     @property
     def name(self) -> str | None:
@@ -448,6 +489,22 @@ def _set(mv: dict[str, Any], key: str, value: Any) -> None:
 def _passthrough(node: PlanNode, attrs: dict[str, Any]) -> None:
     """Keep `attributes` raw; the builder decides plain vs multivalue from the schema."""
     node.mv.update({f"?{k}": v for k, v in attrs.items()})  # '?' = kind decided by the builder
+
+
+def _generic(spec: NodeSpec, label: str) -> PlanNode:
+    """An object of any type; the builder checks its placement and attributes against the schema."""
+    n = PlanNode(spec.type, label, auto=spec.auto, index=spec.index, generic=True)
+    if spec.name:
+        n.plain["name"] = spec.name
+    _passthrough(n, spec.attributes)
+    n.children += [_generic(c, f"{label}.children[{i}]") for i, c in enumerate(spec.children)]
+    return n
+
+
+def _extras(node: PlanNode, spec: Any) -> None:
+    """What every spec object takes besides its friendly keys: `attributes` and `children`."""
+    _passthrough(node, spec.attributes)
+    node.children += [_generic(c, f"{node.label}.children[{i}]") for i, c in enumerate(spec.children)]
 
 
 def _bgp(spec: BgpPeerSpec, v6: bool, label: str) -> PlanNode:
@@ -500,7 +557,7 @@ def _bgp(spec: BgpPeerSpec, v6: bool, label: str) -> PlanNode:
             _set(es.mv, "esiValue", getattr(evi, "esi", None))
             n.children.append(es)
         n.children.append(_evi(evi, "bgpIPv4EvpnEvi" if key == "evpn_mpls" else "bgpIPv4EvpnVXLAN", f"{label}.{key}"))
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -513,7 +570,7 @@ def _route_targets(kind: str, rts: list[RouteTargetSpec], label: str) -> list[Pl
             n.mv["targetAs4Number" if rt.type == "as4" else "targetAsNumber"] = rt.as_number
         _set(n.mv, "targetIpAddress", rt.ip)
         _set(n.mv, "targetAssignedNumber", rt.number)
-        _passthrough(n, rt.attributes)
+        _extras(n, rt)
         out.append(n)
     return out
 
@@ -555,7 +612,7 @@ def _evi(spec: Union[EvpnVxlanSpec, EvpnMplsSpec], rest_type: str, label: str) -
         bd = PlanNode("broadcastDomainV4", f"{label}.ethernet_tag_id", auto=True, singleton=True)
         bd.mv["ethernetTagId"] = spec.ethernet_tag_id
         n.children.append(bd)
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -589,7 +646,7 @@ def _ospf(spec: OspfSpec, v3: bool, label: str) -> PlanNode:
         if not v3:
             raise PlanError([f"{label}.instance_id: OSPFv3 only"])
         m["instanceId"] = spec.instance_id
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -608,9 +665,9 @@ def _mcast_host(spec: IgmpMldHostSpec, mld: bool, label: str) -> PlanNode:
         _set(g.mv, "mcastAddrCnt", spec.groups.count)
         _set(g.mv, "mcastAddrIncr", spec.groups.step)
         _set(g.mv, "sourceMode", spec.groups.source_mode)
-        _passthrough(g, spec.groups.attributes)
+        _extras(g, spec.groups)
         n.children.append(g)
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -623,7 +680,7 @@ def _querier(spec: IgmpMldQuerierSpec, mld: bool, label: str) -> PlanNode:
         n.mv["versionType"] = v if v.startswith("version") else f"version{v}"
     _set(n.mv, "generalQueryInterval", spec.query_interval)
     _set(n.mv, "robustnessVariable", spec.robustness)
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -648,9 +705,9 @@ def _dhcp_server(spec: DhcpServerSpec, v6: bool, label: str) -> PlanNode:
         _set(p.mv, "ipDns2", pool.dns2)
         if pool.ia_type is not None:
             raise PlanError([f"{label}.pool.ia_type: DHCPv6 only"])
-    _passthrough(p, pool.attributes)
+    _extras(p, pool)
     n.children.append(p)
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -667,7 +724,7 @@ def _dhcp_client(spec: DhcpClientSpec, v6: bool, label: str) -> PlanNode:
         _set(n.mv, "dhcp4Broadcast", spec.broadcast)
         if spec.ia_type is not None or spec.duid_type is not None:
             raise PlanError([f"{label}: ia_type/duid_type are DHCPv6 settings"])
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -695,7 +752,7 @@ def _ip(spec: Union[Ipv4Spec, Ipv6Spec], v6: bool, label: str) -> PlanNode:
         n.children.append(_dhcp_server(spec.dhcp_server, v6, f"{label}.dhcp_server"))
     if not v6 and spec.ldp:  # type: ignore[union-attr]
         n.children.append(_ldp(spec.ldp, f"{label}.ldp"))  # type: ignore[union-attr]
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -710,7 +767,7 @@ def _ldp(spec: LdpSpec, label: str) -> PlanNode:
         n.mv["authentication"] = "md5"
         n.mv["mD5Key"] = spec.md5_key
     _set(n.mv, "enableBfdRegistration", spec.bfd)
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -723,7 +780,7 @@ def _ldp_router(spec: LdpRouterSpec, label: str) -> PlanNode:
     _set(n.mv, "keepAliveInterval", spec.keepalive)
     _set(n.mv, "keepAliveHoldTime", spec.keepalive_hold_time)
     _set(n.mv, "enableGracefulRestart", spec.graceful_restart)
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -738,7 +795,7 @@ def _isis(spec: IsisSpec, label: str) -> PlanNode:
         n.mv["level1HelloInterval"] = n.mv["level2HelloInterval"] = spec.hello_interval
     if spec.dead_interval is not None:
         n.mv["level1DeadInterval"] = n.mv["level2DeadInterval"] = spec.dead_interval
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -752,7 +809,7 @@ def _vlans(n: PlanNode, vlans: list[VlanSpec], label: str) -> None:
         _set(vn.mv, "vlanId", v.id)
         _set(vn.mv, "priority", v.priority)
         _set(vn.mv, "tpid", v.tpid)
-        _passthrough(vn, v.attributes)
+        _extras(vn, v)
         n.children.append(vn)
 
 
@@ -773,7 +830,7 @@ def _ethernet(spec: EthernetSpec, label: str) -> PlanNode:
         n.children.append(_dhcp_client(spec.dhcpv4_client, False, f"{label}.dhcpv4_client"))
     if spec.dhcpv6_client:
         n.children.append(_dhcp_client(spec.dhcpv6_client, True, f"{label}.dhcpv6_client"))
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -787,7 +844,7 @@ def _loopback(spec: LoopbackSpec, v6: bool, label: str) -> PlanNode:
         n.children.append(_bgp(b, v6, f"{label}.bgp_peers[{i}]"))
     if spec.ospf:
         n.children.append(_ospf(spec.ospf, v6, f"{label}.ospf"))
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -803,9 +860,9 @@ def _isis_sr(router: PlanNode, sr: IsisSrSpec, label: str) -> None:
             gn = PlanNode("isisSRGBRangeSubObjectsList", f"{label}.srgb[{i - 1}]", auto=True, index=i)
             _set(gn.mv, "startSIDLabel", g.start)
             _set(gn.mv, "sIDCount", g.count)
-            _passthrough(gn, g.attributes)
+            _extras(gn, g)
             router.children.append(gn)
-    _passthrough(router, sr.attributes)
+    _extras(router, sr)
 
 
 def _route_prop(kind: str, spec: RoutePropertySpec, v6_pool: bool, label: str) -> PlanNode:
@@ -826,6 +883,28 @@ def _route_prop(kind: str, spec: RoutePropertySpec, v6_pool: bool, label: str) -
         if spec.med is not None:
             m["enableMultiExitDiscriminator"] = True
             m["multiExitDiscriminator"] = spec.med
+        if spec.communities:  # IxNetwork sizes the list from the count; the values live in its entries
+            m["enableCommunity"] = True
+            n.plain["noOfCommunities"] = len(spec.communities)
+            for i, c in enumerate(spec.communities, 1):
+                cn = PlanNode("bgpCommunitiesList", f"{label}.communities[{i - 1}]", auto=True, index=i)
+                manual = c.as_number is not None or c.number is not None
+                _set(cn.mv, "type", c.type if c.type is not None else ("manual" if manual else None))
+                _set(cn.mv, "asNumber", c.as_number)
+                _set(cn.mv, "lastTwoOctets", c.number)
+                _extras(cn, c)
+                n.children.append(cn)
+        if spec.as_path:  # one AS_SEQUENCE segment holding the AS numbers in order
+            m["enableAsPathSegments"] = True
+            n.plain["noOfASPathSegmentsPerRouteRange"] = 1
+            seg = PlanNode("bgpAsPathSegmentList", f"{label}.as_path", auto=True, index=1,
+                           plain={"numberOfAsNumberInSegment": len(spec.as_path)})
+            seg.mv["segmentType"] = "asseq"  # IxNetwork's default is an AS_SET
+            for j, asn in enumerate(spec.as_path, 1):
+                an = PlanNode("bgpAsNumberList", f"{label}.as_path[{j - 1}]", auto=True, index=j)
+                an.mv["asNumber"] = asn
+                seg.children.append(an)
+            n.children.append(seg)
         if spec.metric is not None:
             raise PlanError([f"{label}.metric: use med for BGP"])
         if spec.prefix_sid_index is not None:
@@ -841,10 +920,11 @@ def _route_prop(kind: str, spec: RoutePropertySpec, v6_pool: bool, label: str) -
             sid.mv["configureSIDIndexLabel"] = True  # the route property's own SID attributes are deprecated in 10.00
             sid.mv["sidIndexLabel"] = spec.prefix_sid_index
             n.children.append(sid)
-        bad = [k for k in ("next_hop", "local_pref", "med") if getattr(spec, k) is not None]
+        bad = [k for k in ("next_hop", "local_pref", "med") if getattr(spec, k) is not None] + \
+              [k for k in ("communities", "as_path") if getattr(spec, k)]
         if bad:
             raise PlanError([f"{label}: {bad} are BGP settings"])
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -870,11 +950,11 @@ def _pool(spec: PoolSpec, v6: bool, label: str) -> PlanNode:
         fec = PlanNode("ldpFECProperty", f"{label}.ldp", auto=True, index=1, requires="ldp")
         _set(fec.mv, "labelValue", spec.ldp.label_start)
         _set(fec.mv, "labelIncrementMode", spec.ldp.label_mode)
-        _passthrough(fec, spec.ldp.attributes)
+        _extras(fec, spec.ldp)
         n.children.append(fec)
     if spec.evpn is not None:
         n.children += _evpn_prefixes(spec.evpn, v6, f"{label}.evpn")
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -890,7 +970,7 @@ def _evpn_prefixes(spec: EvpnPrefixSpec, v6: bool, label: str) -> list[PlanNode]
         m["labelMode"] = "increment"
         m["labelStep"] = spec.vni_step
     _evpn_route_attrs(m, spec)
-    _passthrough(r, spec.attributes)
+    _extras(r, spec)
     return [conn, r]
 
 
@@ -929,7 +1009,7 @@ def _mac_pool(spec: MacPoolSpec, label: str) -> PlanNode:
         _set(pn.mv, "prefixLength", ip.prefix_length)
         _set(pn.mv, "numberOfAddressesAsy", ip.count)
         _set(pn.mv, "prefixAddrStep", ip.address_step)
-        _passthrough(pn, ip.attributes)
+        _extras(pn, ip)
         n.children.append(pn)
     ev = spec.evpn
     if ev is not None:  # Type-2: connector -> EVI; IxNetwork then creates cMacProperties[1]
@@ -955,11 +1035,11 @@ def _mac_pool(spec: MacPoolSpec, label: str) -> PlanNode:
             if spec.ipv6_pool:
                 m["advertiseIpv6Address"] = advertise
         _evpn_route_attrs(m, ev)
-        _passthrough(c, ev.attributes)
+        _extras(c, ev)
         n.children.append(c)
     elif spec.ipv4_pool or spec.ipv6_pool:
         raise PlanError([f"{label}: MAC/IP pools need evpn (the EVI that advertises them)"])
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -978,7 +1058,7 @@ def _network_group(spec: NetworkGroupSpec, label: str) -> PlanNode:
         n.children.append(_mac_pool(spec.mac_pool, f"{label}.mac_pool"))
     for i, d in enumerate(spec.device_groups):
         n.children.append(_device_group(d, f"{label}.device_groups[{i}]"))
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -1016,13 +1096,13 @@ def _device_group(spec: DeviceGroupSpec, label: str) -> PlanNode:
                 r.mv["tERouterId"] = rs.te_router_id
             if rs.sr is not None:
                 _isis_sr(r, rs.sr, f"{label}.{key}.sr")
-        _passthrough(r, rs.attributes)
+        _extras(r, rs)
         n.children.append(r)
     for i, g in enumerate(spec.network_groups):
         n.children.append(_network_group(g, f"{label}.network_groups[{i}]"))
     for i, d in enumerate(spec.device_groups):
         n.children.append(_device_group(d, f"{label}.device_groups[{i}]"))
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -1030,7 +1110,7 @@ def topology_plan(spec: TopologySpec, label: str) -> PlanNode:
     n = PlanNode("topology", label, plain={"name": spec.name})
     for i, d in enumerate(spec.device_groups):
         n.children.append(_device_group(d, f"{label}.device_groups[{i}]"))
-    _passthrough(n, spec.attributes)
+    _extras(n, spec)
     return n
 
 
@@ -1044,9 +1124,7 @@ _BUILDERS = {
 
 def extension_plans(parent_type: str, add: dict[str, Any], label: str) -> list[PlanNode]:
     """Plan nodes to create under an existing object of ``parent_type``."""
-    allowed = EXTEND_FIELDS.get(parent_type)
-    if allowed is None:
-        raise PlanError([f"{label}: nothing can be added to a {parent_type} with apply_config; use add_node"])
+    allowed = {**EXTEND_FIELDS.get(parent_type, {}), "children": NodeSpec}  # `children`: under any object
     unknown = set(add) - set(allowed)
     if unknown:
         raise PlanError([f"{label}.add: {sorted(unknown)} cannot be added to a {parent_type} "
@@ -1063,7 +1141,9 @@ def extension_plans(parent_type: str, add: dict[str, Any], label: str) -> list[P
             except ValidationError as exc:
                 raise PlanError([f"{lbl}.{'.'.join(str(x) for x in e['loc'])}: {e['msg']}"
                                  for e in exc.errors()[:20]]) from None
-            if model is BgpPeerSpec:
+            if model is NodeSpec:
+                plans.append(_generic(spec, lbl))
+            elif model is BgpPeerSpec:
                 plans.append(_bgp(spec, v6_parent, lbl))
             elif model is OspfSpec:
                 plans.append(_ospf(spec, v6_parent, lbl))

@@ -64,9 +64,11 @@ async def schema_for(manager: SessionManager, target: str | None) -> tuple[Schem
     return idx, warnings
 
 
-def live_multivalues(ixn: Any, ref: str) -> dict[str, Any]:
+def live_multivalues(ixn: Any, ref: str, schema: SchemaIndex | None = None) -> dict[str, Any]:
     node = ConfigIndex.build(ixn, props=["name"]).resolve(ref)
     r = rest.select(ixn, node.href, properties=["*"], inlines=rest.MV_INLINES)[0]
+    if schema is not None:
+        schema.remember(node.type_path, r)
     out: dict[str, Any] = {"ref": {"name": node.name, "type": node.type, "xpath": node.xpath}, "attributes": {}}
     for k, v in r.items():
         if rest.is_multivalue(v):
@@ -103,17 +105,21 @@ def register(app: FastMCP, manager: SessionManager) -> None:
         """Describe an IxNetwork node type: where it lives, whether it can be created, its
         attributes (kind 'multivalue' = per-device value pattern, 'settable' = plain value,
         'readonly'), formats, enum values and defaults, its child types and (on request) its
-        operations. `node_type` is a type name ('bgpIpv4Peer') or a type path
+        operations. Formats and enums of per-device values are known for the curated protocols and
+        for every type an object of which was read or built before; `live_ref` fills them in now.
+        `node_type` is a type name ('bgpIpv4Peer') or a type path
         ('topology/deviceGroup/ethernet/ipv4/bgpIpv4Peer'). `attributes` filters by name
         substrings (e.g. ['as', 'hold']). `live_ref` (name/xpath of an existing object of this
         type) adds the object's current multivalue patterns and exact live enums."""
         idx, warnings = await schema_for(manager, target)
+        # the live object first: what it shows (formats, enums) is in the description below as well
+        live = await manager.call(target, lambda ixn: live_multivalues(ixn, live_ref, idx)) if live_ref else None
         desc = idx.describe(node_type, attributes=attributes, include=list(include) if include else None,
                             include_readonly=include_readonly)
         if desc is None:
             raise IxToolError(NOT_FOUND, f"unknown node type '{node_type}'",
                               candidates=[m["type"] for m in idx.search(node_type, limit=8)] or None,
                               hint="Use search_node_types to find the right type name.")
-        if live_ref:
-            desc["live"] = await manager.call(target, lambda ixn: live_multivalues(ixn, live_ref))
+        if live is not None:
+            desc["live"] = live
         return ok(target, desc, warnings=warnings)

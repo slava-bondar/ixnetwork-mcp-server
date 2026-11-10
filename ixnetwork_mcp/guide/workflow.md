@@ -29,10 +29,25 @@ Object-by-object alternative (for things the spec does not cover):
 4. `add_node('ipv4', parent=<ethernet name>, attributes={'address': {'start': '10.0.0.2', 'step': '0.0.0.1'}, 'gatewayIp': '10.0.0.1', 'prefix': 24})`
 5. protocols on top, e.g. `add_node('bgpIpv4Peer', parent=<ipv4 name>, attributes={'dutIp': '10.0.0.1', 'type': 'external', 'localAs2Bytes': 65001})`
 6. route pools: `add_node('networkGroup', parent='T1 DG1', attributes={'multiplier': 1})`, then
-   `add_node('ipv4PrefixPools', parent=<ng>, attributes={'networkAddress': {'start': '100.0.0.0', 'step': '0.0.1.0'}, 'prefixLength': 24, 'numberOfAddresses': 100})`;
+   `add_node('ipv4PrefixPools', parent=<ng>, attributes={'networkAddress': {'start': '100.0.0.0', 'step': '0.0.1.0'}, 'prefixLength': 24, 'numberOfAddressesAsy': 100})`;
    the BGP/OSPF/IS-IS route property below the pool is created automatically — change it with `set_attributes`.
 Use `describe_node_type` for attribute names/enums and `set_attributes(..., dry_run=true)` to preview.
 Changes are validated before sending, verified after, and rolled back if IxNetwork rejects them.
+
+Settings outside topologies (ports, traffic measurement, protocol globals) are reached by xpath:
+`get_node('<xpath>')` shows an object's values and its children's xpaths, `describe_node_type` its
+attributes, `set_attributes('<xpath>', {...})` changes them.
+- Port L1 (speed, FEC, auto-negotiation): `list_ports` shows each port's `l1` settings and their xpath,
+  e.g. `set_attributes('/vport[1]/l1Config/aresOneFourHundredGigLan', {'speed': 'speed100g', 'enableRsFec': true})`.
+  The attribute names depend on the card type, and the link drops while the port reconfigures.
+- Latency, jitter, loss duration and sequence checking are measured only when enabled, before traffic
+  is applied: `set_attributes('/traffic/statistics/latency', {'enabled': true, 'mode': 'storeForward'})`,
+  and likewise `/traffic/statistics/delayVariation`, `/traffic/statistics/packetLossDuration`,
+  `/traffic/statistics/sequenceChecking`. The traffic statistics views then show those columns.
+  IxNetwork rejects the combinations it does not support.
+- Global protocol settings (per port): `/globals/topology/<protocol>`, e.g. how fast DHCP clients
+  start: `set_attributes('/globals/topology/dhcpv4client/startRate', {'rate': 200})`.
+- Capture filters and triggers: `/vport[n]/capture/filter`, `/vport[n]/capture/trigger`.
 
 Running it:
 - Ports: `list_ports(include_chassis=true)`, then `assign_ports([{"vport": ..., "location": ...}])`.

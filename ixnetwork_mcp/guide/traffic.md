@@ -25,6 +25,13 @@ traffic items; `get_traffic_items(detail="full")` returns them in the same forma
 }
 ```
 
+**Updating an existing item changes only the keys you send.**
+- A new rate, nothing else: `{"name": "A to B v4", "config_elements": [{"frame_rate": {"type": "framesPerSecond", "rate": 1000}}]}`. Frame size, headers, tracking and endpoints stay as they are. Disable an item: `{"name": "A to B v4", "enabled": false}`.
+- One entry in `config_elements` applies to every endpoint set of the item.
+- Send `endpoint_sets` only to change the endpoints. IxNetwork then rebuilds the item's packet, and the server puts back the current rate, frame size, headers and tracking (what `get_traffic_items(detail='full')` shows). Settings outside that format, such as egress tracking, return to their defaults.
+- A new item needs `endpoint_sets`; the keys you leave out take the defaults: 10 % of line rate, 512-byte frames, continuous.
+- `dry_run=true` lists the keys an update would change.
+
 **Endpoints** are objects referenced by name: `{"ref": "<name>"}`.
 - IPv4/IPv6 stacks: traffic between those interfaces.
 - Network groups: traffic to or from the route pools.
@@ -53,11 +60,13 @@ traffic items; `get_traffic_items(detail="full")` returns them in the same forma
 | Setting | Values |
 |---|---|
 | `traffic_type` | ipv4, ipv6, ethernetVlan, raw |
-| `src_dest_mesh` | oneToOne, manyToMany, fullMesh |
+| `src_dest_mesh` | oneToOne, manyToMany, fullMesh, none |
 | `self_destined` | true when a source and a destination share a port (e.g. two device groups on one port) |
 | `frame_rate.type` | percentLineRate, framesPerSecond, bitsPerSecond, interPacketGap (on 100G ports 1 % is 1 Gbps: use framesPerSecond for low rates) |
-| `frame_size.type` | fixed (`fixed_size`), increment (`min_size`, `max_size`, `step_size`), random (`min_size`, `max_size`), quadGaussian, weightedPairs |
-| `transmission.type` | continuous, fixedFrameCount (`frame_count`), fixedDuration (`duration`), auto / custom / burstFixedDuration |
+| `frame_size.type` | fixed (`fixed_size`), increment (`min_size`, `max_size`, `step_size`), random (`min_size`, `max_size`), weightedPairs (`weighted_pairs`), presetDistribution (`preset`), quadGaussian, auto |
+| `transmission.type` | continuous, fixedFrameCount (`frame_count`), fixedDuration (`duration`), fixedIterationCount (`iteration_count`), auto / custom / burstFixedDuration |
+
+IMIX: `"frame_size": {"weighted_pairs": [[64, 7], [570, 4], [1518, 1]]}` (size, weight), or a built-in mix with `{"preset": "imix"}` (also cisco, ipSecImix, ipV6Imix, rprQuar, rprTri, standardImix, tcpImix, tolly). The type follows from the key, as it does for `{"fixed_size": 128}` and `{"frame_count": 1000}`.
 
 Burst settings (auto, custom, burstFixedDuration): `min_gap_bytes`, `inter_burst_gap`, `inter_burst_gap_units`, `burst_packet_count`, `repeat_burst`.
 

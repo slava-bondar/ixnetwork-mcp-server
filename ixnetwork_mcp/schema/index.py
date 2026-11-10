@@ -13,10 +13,15 @@ from __future__ import annotations
 import functools
 import gzip
 import json
+import logging
 import re
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+log = logging.getLogger("ixnetwork_mcp.schema")
+_learn_lock = threading.Lock()
 
 HERE = Path(__file__).resolve().parent
 CACHE_DIR = HERE / "cache"  # shipped with the package
@@ -36,25 +41,88 @@ class NodeInfo:
 
 class SchemaIndex:
     def __init__(self, nodes: dict[str, dict[str, Any]], mv_meta: dict[str, dict[str, Any]], build: str,
-                 mv_build: str | None = None):
+                 mv_build: str | None = None, *, learned: dict[str, dict[str, Any]] | None = None,
+                 learn_key: str | None = None):
         self.nodes = nodes
         self.build = build
         self.mv_build = mv_build
+        self.learn_key = learn_key or build       # the build whose live objects teach this index
+        self.mv_exact = mv_build == self.learn_key  # the shipped multivalue data was captured on that very build
         self.by_name: dict[str, list[str]] = {}
         for path, node in nodes.items():
             name = node.get("name") or path.rsplit("/", 1)[-1]
             self.by_name.setdefault(name, []).append(path)
-        # multivalue metadata is keyed by concrete type paths; fold onto canonical classes
+        # multivalue metadata is keyed by concrete type paths; fold onto canonical classes. Data
+        # captured on this build wins over what was learned; data from another build does not.
         self.mv: dict[str, dict[str, Any]] = {}
-        for path, attrs in mv_meta.items():
+        self._seen: dict[str, set[str]] = {}
+        # classes whose live objects were read in full: captured on this very build, or learned before
+        self._complete: set[str] = set()
+        for path in [*(mv_meta if self.mv_exact else {}), *(learned or {})]:
             info = self.resolve(path)
-            if info is None:
+            if info is not None:
+                self._complete.add(info.canonical)
+        for source in ([mv_meta, learned or {}] if self.mv_exact else [learned or {}, mv_meta]):
+            for path, attrs in source.items():
+                info = self.resolve(path)
+                if info is None:
+                    continue
+                folded = self.mv.setdefault(info.canonical, {})
+                for attr, meta in attrs.items():  # merge per key: a capture without a default keeps another's
+                    cur = folded.setdefault(attr, {})
+                    for k, v in meta.items():
+                        cur.setdefault(k, v)
+
+    # ------------------------------------------------------------------ learning from live objects
+
+    def learn_multivalues(self, type_path: str, node: dict[str, Any]) -> dict[str, dict[str, Any]]:
+        """Take format, enums and allowed patterns of the per-device attributes of a live object
+        (a select answer with rest.MV_INLINES) into the index: the REST schema does not publish
+        them. -> the rows that were new, keyed by attribute. No names or values are kept."""
+        info = self.resolve(type_path)
+        if info is None:
+            return {}
+        known = self.mv.setdefault(info.canonical, {})
+        seen = self._seen.setdefault(info.canonical, set())
+        new: dict[str, dict[str, Any]] = {}
+        for attr, mv in node.items():
+            if attr in seen or not (isinstance(mv, dict) and "/multivalue[" in str(mv.get("xpath", ""))):
                 continue
-            folded = self.mv.setdefault(info.canonical, {})
-            for attr, meta in attrs.items():  # merge per key: a capture without a default keeps another's
-                cur = folded.setdefault(attr, {})
-                for k, v in meta.items():
-                    cur.setdefault(k, v)
+            fmt = mv.get("format")
+            if not fmt or fmt == "kVoid":
+                continue
+            seen.add(attr)
+            have = known.get(attr, {})
+            if self.mv_exact and have.get("format"):
+                continue  # captured for this very build already
+            row: dict[str, Any] = {"format": fmt, "availablePatterns": list(mv.get("availablePatterns") or [])}
+            if mv.get("enums"):
+                row["enums"] = list(mv["enums"])
+            if have.get("format") == fmt and (have.get("enums") or None) == row.get("enums"):
+                continue  # nothing the index did not have
+            known[attr] = {**{k: v for k, v in have.items() if k != "enums"}, **row}
+            new[attr] = row
+        return new
+
+    def needs_full_read(self, type_path: str) -> bool:
+        """Has no live object of this type been read in full yet (on the target's own build)?"""
+        info = self.resolve(type_path)
+        return info is not None and info.canonical not in self._complete
+
+    def remember(self, type_path: str, node: dict[str, Any]) -> None:
+        """learn_multivalues from a full read of a live object, and keep what was new in the user's
+        cache for this build. Never raises: a read must not fail because the cache cannot be written."""
+        try:
+            info = self.resolve(type_path)
+            if info is None:
+                return
+            first = info.canonical not in self._complete
+            new = self.learn_multivalues(type_path, node)
+            self._complete.add(info.canonical)
+            if new or first:  # also note a type that taught nothing, so it is not read again next time
+                _store_learned(self.learn_key, info.canonical, new)
+        except Exception as exc:  # noqa: BLE001
+            log.debug("could not keep learned multivalue formats for %s: %s", type_path, exc)
 
     # ------------------------------------------------------------------ lookup
 
@@ -180,7 +248,8 @@ class SchemaIndex:
         out = []
         for c in info.raw.get("children") or []:
             row: dict[str, Any] = {"name": c["name"]}
-            if c.get("skipped") or c.get("not_crawled"):
+            # a child the parent's own pass stopped at may still be crawled as a scope root of its own
+            if c.get("skipped") or (c.get("not_crawled") and c.get("type_path") not in self.nodes):
                 row["not_indexed"] = True
             else:
                 ci = self.resolve(c["type_path"]) if "same_as" not in c else self.resolve(c["same_as"])
@@ -318,6 +387,30 @@ def user_cache_path(build: str) -> Path:
     return USER_CACHE_DIR / f"{build}.json.gz"
 
 
+def learned_path(build: str) -> Path:
+    """Multivalue formats / enums learned from live objects of this build (see SchemaIndex.remember)."""
+    return USER_CACHE_DIR / f"mv_meta_{build}.json"
+
+
+def _read_learned(build: str) -> dict[str, dict[str, Any]]:
+    try:
+        data = json.loads(learned_path(build).read_text())
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _store_learned(build: str, canonical: str, rows: dict[str, dict[str, Any]]) -> None:
+    with _learn_lock:  # several targets on one build may learn at the same time
+        data = _read_learned(build)
+        data.setdefault(canonical, {}).update(rows)
+        path = learned_path(build)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_text(json.dumps(data, indent=1, sort_keys=True))
+        tmp.replace(path)
+
+
 def _nearest(builds: list[str], build: str | None) -> str:
     if not build:
         return builds[-1]
@@ -341,4 +434,5 @@ def get_index(build: str | None = None) -> tuple[SchemaIndex, bool]:
     mv_builds = sorted((p.stem[len("mv_meta_"):] for p in DATA_DIR.glob("mv_meta_*.json")), key=_build_key)
     mv_build = chosen if chosen in mv_builds else (_nearest(mv_builds, chosen) if mv_builds else None)
     mv_meta = json.loads((DATA_DIR / f"mv_meta_{mv_build}.json").read_text()) if mv_build else {}
-    return SchemaIndex(nodes, mv_meta, chosen, mv_build), exact
+    learn_key = build or chosen  # what live objects of the target's own build taught earlier
+    return SchemaIndex(nodes, mv_meta, chosen, mv_build, learned=_read_learned(learn_key), learn_key=learn_key), exact

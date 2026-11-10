@@ -56,6 +56,27 @@ def _attr_kinds(schema: SchemaIndex, type_path: str) -> tuple[dict[str, str], di
     return kinds, defaults, deprecated
 
 
+_PLUMBING = ("port", "tag", "learnedInfo")
+
+
+def live_children(ixn: Any, node: Any, schema: SchemaIndex, current: dict[str, Any]) -> tuple[list[dict[str, Any]], str | None]:
+    """Children of an object the index does not cover (a vport, a traffic item, anything reached by
+    xpath): the child types the schema lists for it, read with one select. -> (children, note)"""
+    info = schema.resolve(node.type_path)
+    names = [c["name"] for c in (schema.children(info) if info else []) if c["name"] not in _PLUMBING]
+    if not names:
+        return [], None
+    sel = rest.select(ixn, node.href, properties=[], children=[rest.child(f"^({'|'.join(names)})$", ["name"])])[0]
+    kids = [{k: v for k, v in (("name", c.get("name")), ("type", rest.node_type(c["xpath"])), ("xpath", c["xpath"]))
+             if v is not None} for c in rest.child_nodes(sel)]
+    active = current.get("currentType")  # e.g. a port's l1Config: one variant per card type, one in use
+    if isinstance(active, str) and len(kids) > 1:
+        chosen = [k for k in kids if k["type"].lower() == active.lower().removesuffix("fcoe")]
+        if chosen:
+            return chosen, f"{len(kids) - len(chosen)} other variants not shown; currentType selects the one in use"
+    return kids, None
+
+
 def _strip_nest(v: Any) -> Any:
     if isinstance(v, dict):
         base = {k: x for k, x in v.items() if k not in ("port_step", "nest", "overlays")}
@@ -71,6 +92,7 @@ def detail(ixn: Any, ref: str, schema: SchemaIndex, attributes: list[str] | None
     if expand_values > 0:
         inlines[0]["properties"].append("values")
     r = rest.select(ixn, node.href, properties=["*"], inlines=inlines)[0]
+    schema.remember(node.type_path, r)  # formats / enums of its per-device values, for later calls
     kinds, defaults, deprecated = _attr_kinds(schema, node.type_path)
     wanted = [a.lower() for a in attributes] if attributes else None
     settable: dict[str, Any] = {}
@@ -112,6 +134,10 @@ def detail(ixn: Any, ref: str, schema: SchemaIndex, attributes: list[str] | None
         out["values"] = values
     if children:
         out["children"] = [{"name": c.name, "type": c.type, "xpath": c.xpath} for c in idx.children(node)]
+        if not out["children"]:  # vports, traffic items and objects reached by xpath: ask the server
+            out["children"], note = live_children(ixn, node, schema, r)
+            if note:
+                out["children_note"] = note
     if node.type == "deviceGroup" or "count" in r:
         out["devices"] = r.get("count")
     return out
@@ -148,7 +174,10 @@ def register(app: FastMCP, manager: SessionManager) -> None:
         target: str | None = None,
     ) -> dict[str, Any]:
         """Show one configuration object. `ref` is a name ('BGP Peer 1'), 'type:name', an xpath or
-        an href. `attributes` holds settable values: per-device multivalues are rendered as Values
+        an href. An xpath reaches any object, also outside topologies: '/vport[1]/l1Config',
+        '/traffic/statistics/latency', '/traffic/trafficItem[1]/configElement[1]/frameRate',
+        '/globals/topology/ipv4' (`children` gives the next xpaths).
+        `attributes` holds settable values: per-device multivalues are rendered as Values
         (a plain value, {start, step, direction} counter, {list: [...]}, with port_step/nest when
         enabled) — the same form used when changing them. `state` holds read-only status.
         `attributes=[...]` filters by name substrings; `changed_only` hides values still at their
